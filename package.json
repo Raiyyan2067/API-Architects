@@ -1,0 +1,16 @@
+{
+  "name": "api-architects",
+  "version": "1.0.0",
+  "description": "SENG2021 Group Project",
+  "main": "main.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node main.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
