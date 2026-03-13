@@ -15,7 +15,7 @@ def create_despatch_advice():
 
 # Retrieve a list of all Despatch Advice documents
 @app.get("/ubl/v2/despatch-advice")
-async def list_despatch_advice():
+def list_despatch_advice():
     return {"message": "Endpoint stub is working"}
 
 # Retrieve a Despatch Advice document using its ID
@@ -50,7 +50,7 @@ def delete_despatch_advice_by_id(id: str):
 
 # Delete a Despatch Advice document using its UUID
 @app.delete("/ubl/v2/despatch-advice/uuid/{uuid}")
-def delete_despatch_advice_by_id(uuid: str):
+def delete_despatch_advice_by_uuid(uuid: str):
     return {"message": "Endpoint stub is working"}
 
 # Health check to confirm the service is running
