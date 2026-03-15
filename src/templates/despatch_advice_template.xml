@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DespatchAdvice
+    xmlns="urn:oasis:names:specification:ubl:schema:xsd:DespatchAdvice-2"
+    xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+    xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
+
+    <!-- ===================== -->
+    <!--  BASIC DOCUMENT INFO  -->
+    <!-- ===================== -->
+    <cbc:ID>{{
+    despatch_id }}</cbc:ID>
+    <cbc:IssueDate>{{ issue_date }}</cbc:IssueDate> {% if issue_time %} <cbc:IssueTime>{{
+    issue_time }}</cbc:IssueTime> {% endif %} <cbc:DespatchAdviceTypeCode>
+        Dispatch</cbc:DespatchAdviceTypeCode>
+
+
+    <!-- ===================== -->
+    <!--  ORDER REFERENCE      -->
+    <!-- ===================== -->
+    <cac:OrderReference>
+        <cbc:ID>{{ order.order_id }}</cbc:ID> {% if order.sales_order_id %} <cbc:SalesOrderID>{{
+    order.sales_order_id }}</cbc:SalesOrderID> {% endif %} </cac:OrderReference>
+
+    <!-- ==================================== -->
+    <!--  DESPATCH SUPPLIER (SELLER / SHIPPER) -->
+    <!-- ==================================== -->
+    <cac:DespatchSupplierParty>
+        <cac:Party>
+            <cac:PartyName>
+                <cbc:Name>{{ order.seller.name }}</cbc:Name>
+            </cac:PartyName>
+
+            <cac:PostalAddress>
+                <cbc:StreetName>{{ order.seller.address and order.seller.address.street or '' }}</cbc:StreetName>
+                <cbc:CityName>{{ order.seller.address and order.seller.address.city or '' }}</cbc:CityName>
+                <cbc:PostalZone>{{ order.seller.address and order.seller.address.postcode or '' }}</cbc:PostalZone>
+                <cac:Country>
+                    <cbc:IdentificationCode>{{ order.seller.address and order.seller.address.country
+    or '' }}</cbc:IdentificationCode>
+                </cac:Country>
+            </cac:PostalAddress>
+
+        </cac:Party>
+    </cac:DespatchSupplierParty>
+
+    <!-- ====================================== -->
+    <!--  DELIVERY CUSTOMER (BUYER / RECEIVER)  -->
+    <!-- ====================================== -->
+    <cac:DeliveryCustomerParty>
+        <cac:Party>
+
+            <cac:PartyName>
+                <cbc:Name>{{ order.buyer.name }}</cbc:Name>
+            </cac:PartyName>
+
+            <cac:PostalAddress>
+                <cbc:StreetName>{{ order.buyer.address and order.buyer.address.street or '' }}</cbc:StreetName>
+                <cbc:CityName>{{ order.buyer.address and order.buyer.address.city or '' }}</cbc:CityName>
+                <cbc:PostalZone>{{ order.buyer.address and order.buyer.address.postcode or '' }}</cbc:PostalZone>
+                <cac:Country>
+                    <cbc:IdentificationCode>{{ order.buyer.address and order.buyer.address.country
+                        or '' }}</cbc:IdentificationCode>
+                </cac:Country>
+            </cac:PostalAddress>
+
+        </cac:Party>
+    </cac:DeliveryCustomerParty>
+
+    <!-- ===================== -->
+    <!--      SHIPMENT INFO    -->
+    <!-- ===================== -->
+    <cac:Shipment>
+
+        <cbc:ID>{{ shipment.shipment_id }}</cbc:ID>
+        <cbc:HandlingCode>{{ shipment.handling_code or ''
+    }}</cbc:HandlingCode>
+        <cbc:Information>{{ shipment.information or '' }}</cbc:Information> {% for
+    item in despatch_items %} <cac:GoodsItem>
+            <cbc:Description>{{ item.description or '' }}</cbc:Description>
+            <cbc:Quantity unitCode="{{ item.unit_code | e }}">{{ item.quantity }}</cbc:Quantity>
+        </cac:GoodsItem>
+    {% endfor %} <cac:ShipmentStage>
+            <cac:TransportMeans>
+                <cbc:TransportMeansTypeCode>{{ shipment.transport_mode or '' }}</cbc:TransportMeansTypeCode>
+            </cac:TransportMeans>
+        </cac:ShipmentStage>
+
+        <cac:Delivery>
+            <cac:DeliveryAddress>
+                <cbc:StreetName>{{ shipment.delivery_address and shipment.delivery_address.street or
+    '' }}</cbc:StreetName>
+                <cbc:CityName>{{ shipment.delivery_address and shipment.delivery_address.city or ''
+    }}</cbc:CityName>
+                <cbc:PostalZone>{{ shipment.delivery_address and shipment.delivery_address.postcode
+    or '' }}</cbc:PostalZone>
+                <cac:Country>
+                    <cbc:IdentificationCode>{{ shipment.delivery_address and
+    shipment.delivery_address.country or '' }}</cbc:IdentificationCode>
+                </cac:Country>
+            </cac:DeliveryAddress>
+        </cac:Delivery>
+
+        <cac:TransportHandlingUnit>
+            <cbc:ID>{{ shipment.transport_unit_id or '' }}</cbc:ID>
+        </cac:TransportHandlingUnit>
+
+    </cac:Shipment>
+
+    <!-- ===================== -->
+    <!--    DESPATCH LINES    -->
+    <!-- ===================== -->
+    {% for item in despatch_items %} <cac:DespatchLine>
+
+        <cbc:ID>{{ loop.index }}</cbc:ID>
+
+        <cbc:DeliveredQuantity unitCode="{{ item.unit_code }}">{{ item.quantity }}</cbc:DeliveredQuantity>
+
+        <cac:OrderLineReference>
+            <cbc:LineID>{{ loop.index }}</cbc:LineID>
+        </cac:OrderLineReference>
+
+        <cac:Item>
+            <cbc:Description>{{ item.description or '' }}</cbc:Description>
+            <cbc:Name>{{ item.name or '' }}</cbc:Name>
+
+            <cac:BuyersItemIdentification>
+                <cbc:ID>{{ item.buyer_item_id or '' }}</cbc:ID>
+            </cac:BuyersItemIdentification>
+
+            <cac:SellersItemIdentification>
+                <cbc:ID>{{ item.seller_item_id or '' }}</cbc:ID>
+            </cac:SellersItemIdentification>
+        </cac:Item>
+
+    </cac:DespatchLine>
+    {% endfor %} </DespatchAdvice>

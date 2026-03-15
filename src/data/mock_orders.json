@@ -1,0 +1,24 @@
+{
+    "ORDER123": {
+        "order_id": "ORDER123",
+        "sales_order_id": "SO-99887",
+        "buyer": {
+            "name": "Tech Buyer Ltd",
+            "address": {
+                "street": "Buyer Street 12",
+                "city": "Sydney",
+                "postcode": "2000",
+                "country": "AU"
+            }
+        },
+        "seller": {
+            "name": "Supplier Pty Ltd",
+            "address": {
+                "street": "Warehouse Road 5",
+                "city": "Melbourne",
+                "postcode": "3000",
+                "country": "AU"
+            }
+        }
+    }
+}
