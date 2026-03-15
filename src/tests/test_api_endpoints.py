@@ -74,6 +74,7 @@ def test_generate_endpoint_returns_xml_file():
         assert "D123" in body
 
 
+
 def test_list_endpoint_after_generation():
         res = client.post("/ubl/v2/despatch-advice/generate", json=_valid_request_json())
         assert res.status_code == 201

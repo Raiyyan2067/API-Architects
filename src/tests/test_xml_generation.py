@@ -53,6 +53,7 @@ def _valid_payload():
                 ],  
         }
 
+
 def test_generate_despatch_advice_renders_in_xml(monkeypatch):
         monkeypatch.setattr(gen, "validate_xml_against_xsd", lambda _xml: None)
 

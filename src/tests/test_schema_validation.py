@@ -7,6 +7,7 @@ def test_invalid_xml_fails_schema_validation():
                 gen.validate_xml_against_xsd(bad_xml)
         assert "UBL validation error" in str(excinfo.value)
 
+
 def test_generated_xml_passes_schema_validation(monkeypatch):
         payload = {
         "despatch_id": "D123",
