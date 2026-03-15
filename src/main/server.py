@@ -1,11 +1,11 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 
-from main import generate_despatch_advice
+from main import generate_despatch_advice, parse_filename
 from despatch_models import DespatchRequest
 import os
 from uuid import uuid4
-from datetime import datetime
+from datetime import datetime, timezone
 
 app = FastAPI()
 
@@ -18,7 +18,7 @@ TEMP_FILE = {"uuid": None, "file_path": None}
 
 @app.get("/")
 def root():
-    return {"message": "Hello World! I am root!"}
+    return {"message": "I am ROOT!"}
 
 # Create a new UBL Despatch Advice document
 @app.post("/ubl/v2/despatch-advice/generate", status_code=201)
@@ -26,7 +26,7 @@ def generate_despatch(request: DespatchRequest):
     try:
         xml_content = generate_despatch_advice(request)
         doc_uuid = str(uuid4())
-        time_created = datetime.utcnow().strftime("%Y%m%dT%H%M%S")
+        time_created = datetime.now(timezone.utc).strftime("%Y-%m-%dT-%H%M%S")
 
         filename = f"Despatch_{request.despatch_id}_{doc_uuid}_{time_created}.xml"
         file_path = os.path.join(GENERATED_DIR, filename)
@@ -54,9 +54,13 @@ def generate_despatch(request: DespatchRequest):
 # Retrieve a list of all Despatch Advice documents
 @app.get("/ubl/v2/despatch-advice/list")
 def list_despatch_advice():
-    if not TEMP_FILE["file_path"]:
+    files = os.listdir(GENERATED_DIR)
+    xml_files = [f for f in files]
+    if not xml_files:
         raise HTTPException(status_code=404, detail="No Despatch Advice generated yet")
-    return FileResponse(TEMP_FILE["file_path"], media_type="application/xml", filename=f"Despatch_{TEMP_FILE['uuid']}.xml")
+
+    file_data = [parse_filename(f) for f in xml_files]
+    return {"files": file_data}
 
 # Retrieve a Despatch Advice document using its ID
 @app.get("/ubl/v2/despatch-advice/id/{id}")
