@@ -1,6 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Response
+from despatch_models import DespatchRequest
 
 from main import testMessage
+from ubl_generator import generate_despatch_advice
 
 app = FastAPI()
 
@@ -10,8 +12,17 @@ def root():
 
 # Create a new UBL Despatch Advice document
 @app.post("/ubl/v2/despatch-advice")
-def create_despatch_advice():
-    return {"message": "create_despatch_advice stub is working"}
+def create_despatch_advice(request: DespatchRequest):
+    try:
+        xml = generate_despatch_advice(request)
+
+        return Response(
+            content=xml,
+            media_type="application/xml"
+        )
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 # Retrieve a list of all Despatch Advice documents
 @app.get("/ubl/v2/despatch-advice")
