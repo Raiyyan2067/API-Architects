@@ -27,7 +27,7 @@ Start the API server with:
 python run.py
 ```
 
-Make sure you are in the src/main folder to run the command.
+Make sure you are in the `src/main` folder to run the command.
 
 ---
 
