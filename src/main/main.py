@@ -1,6 +1,7 @@
 import os
 from jinja2 import Environment, FileSystemLoader
 from xmlschema import XMLSchema, XMLSchemaException
+from datetime import datetime, timezone
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
@@ -42,3 +43,25 @@ def generate_despatch_advice(request_model):
     validate_xml_against_xsd(xml)
 
     return xml
+
+# Helper to parse filename
+# # Format: Despatch_{despatch_id}_{uuid}_{timestamp}.xml
+def parse_filename(filename):
+    parts = filename.replace(".xml", "").split("_")
+    despatch_id = parts[1]
+    doc_uuid = parts[2]
+    timestamp_str = parts[3]
+
+    try:
+        date = datetime.strptime(timestamp_str, "%Y-%m-%dT-%H%M%S")
+        iso_timestamp = date.strftime("%Y-%m-%dT%H:%M:%S")
+    except ValueError:
+        iso_timestamp = timestamp_str
+
+    return {
+        "despatch_id": despatch_id,
+        "uuid": doc_uuid,
+        "timestamp": iso_timestamp,
+        "filename": filename,
+        "download_url": f"/ubl/v2/despatch-advice/download/{doc_uuid}"
+    }
