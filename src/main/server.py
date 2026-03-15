@@ -1,22 +1,47 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
 
-from main import testMessage
+from main import testMessage, generate_despatch_advice
+from despatch_models import DespatchRequest
+import os
+from uuid import uuid4
 
 app = FastAPI()
 
+# Temp database to store generated XML file (no persistence)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+GENERATED_DIR = os.path.join(BASE_DIR, "generated")
+os.makedirs(GENERATED_DIR, exist_ok=True)
+
+TEMP_FILE = {"uuid": None, "file_path": None}
+
 @app.get("/")
 def root():
-    return testMessage()
+    return {"message": "Hello World! I am root!"}
 
 # Create a new UBL Despatch Advice document
-@app.post("/ubl/v2/despatch-advice")
-def create_despatch_advice():
-    return {"message": "create_despatch_advice stub is working"}
+@app.post("/ubl/v2/despatch-advice/generate", status_code=201)
+def generate_despatch(request: DespatchRequest):
+    try:
+        xml_content = generate_despatch_advice(request)
+        doc_uuid = str(uuid4())
+        file_path = os.path.join(GENERATED_DIR, "despatch.txt")
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write(xml_content)
+
+        TEMP_FILE["uuid"] = doc_uuid
+        TEMP_FILE["file_path"] = file_path
+
+        return {"uuid": doc_uuid, "file_path": file_path, "message": "Despatch Advice created"}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 # Retrieve a list of all Despatch Advice documents
-@app.get("/ubl/v2/despatch-advice")
+@app.get("/ubl/v2/despatch-advice/list")
 def list_despatch_advice():
-    return {"message": "list_despatch_advice stub is working"}
+    if not TEMP_FILE["file_path"]:
+        raise HTTPException(status_code=404, detail="No Despatch Advice generated yet")
+    return FileResponse(TEMP_FILE["file_path"], media_type="application/xml", filename="latest_despatch.txt")
 
 # Retrieve a Despatch Advice document using its ID
 @app.get("/ubl/v2/despatch-advice/id/{id}")
@@ -74,4 +99,4 @@ def delete_despatch_advice_by_uuid(uuid: str):
 # Health check to confirm the service is running
 @app.get("/ubl/v2/despatch-advice/health")
 def health_check():
-    return {"message": "health_check stub is working"}
+    return {"status": "ok"}

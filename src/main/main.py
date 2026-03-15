@@ -1,4 +1,45 @@
-# main file for the functions
+import os
+from jinja2 import Environment, FileSystemLoader
+from xmlschema import XMLSchema, XMLSchemaException
 
-def testMessage():
-    return {"message": "Hello World!"}
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
+XSD_PATH = os.path.join(BASE_DIR, "xsd", "maindoc",
+                        "UBL-DespatchAdvice-2.1.xsd")
+
+env = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
+schema = XMLSchema(XSD_PATH)
+
+def validate_xml_against_xsd(xml_content: str):
+    try:
+        schema.validate(xml_content)
+    except XMLSchemaException as e:
+        raise ValueError(f"UBL validation error: {e}")
+
+
+def generate_despatch_advice(request_model):
+
+    # Support Pydantic models or dicts
+    if hasattr(request_model, "model_dump"):
+        merged_data = request_model.model_dump()
+    elif hasattr(request_model, "dict"):
+        merged_data = request_model.dict()
+    else:
+        merged_data = request_model
+
+    # Validate required top-level fields
+    required_fields = ["despatch_id", "issue_date", "order", "shipment"]
+    for field in required_fields:
+        if merged_data.get(field) in (None, "", [], {}):
+            raise ValueError(f"Missing required field: {field}")
+
+    merged_data["order_details"] = merged_data["order"]
+
+    # Load template and render XML
+    template = env.get_template("despatch_advice_template.xml")
+    xml = template.render(**merged_data)
+
+    # Validate XML using UBL XSD
+    validate_xml_against_xsd(xml)
+
+    return xml
