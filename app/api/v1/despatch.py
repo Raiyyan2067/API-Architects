@@ -3,12 +3,14 @@ from fastapi.responses import FileResponse
 import os
 from uuid import uuid4
 from datetime import datetime, timezone
+from mangum import Mangum
 
 # Updated imports to match new project structure
 from app.core.ubl_generator import generate_despatch_advice, parse_filename
 from app.models.despatch_models import DespatchRequest
 
 router = APIRouter()
+handler = Mangum(router)
 
 # Adjusted BASE_DIR to point to the root from app/api/v1/
 # Goes up 3 levels: v1 -> api -> app -> project_root
