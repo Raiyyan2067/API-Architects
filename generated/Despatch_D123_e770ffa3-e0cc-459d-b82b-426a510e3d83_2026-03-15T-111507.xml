@@ -7,8 +7,8 @@
     <!-- ===================== -->
     <!--  BASIC DOCUMENT INFO  -->
     <!-- ===================== -->
-    <cbc:ID>DTEST01</cbc:ID>
-    <cbc:IssueDate>2025-03-10</cbc:IssueDate>  <cbc:IssueTime>09:00:00</cbc:IssueTime>  <cbc:DespatchAdviceTypeCode>
+    <cbc:ID>D123</cbc:ID>
+    <cbc:IssueDate>2025-03-10</cbc:IssueDate>  <cbc:IssueTime>10:00:00</cbc:IssueTime>  <cbc:DespatchAdviceTypeCode>
         Dispatch</cbc:DespatchAdviceTypeCode>
 
 
@@ -16,7 +16,7 @@
     <!--  ORDER REFERENCE      -->
     <!-- ===================== -->
     <cac:OrderReference>
-        <cbc:ID>ORDER123</cbc:ID>  </cac:OrderReference>
+        <cbc:ID>ORDER123</cbc:ID>  <cbc:SalesOrderID>SO-99887</cbc:SalesOrderID>  </cac:OrderReference>
 
     <!-- ==================================== -->
     <!--  DESPATCH SUPPLIER (SELLER / SHIPPER) -->
@@ -24,12 +24,12 @@
     <cac:DespatchSupplierParty>
         <cac:Party>
             <cac:PartyName>
-                <cbc:Name>Seller Test</cbc:Name>
+                <cbc:Name>Supplier Pty Ltd</cbc:Name>
             </cac:PartyName>
 
             <cac:PostalAddress>
-                <cbc:StreetName>Street 2</cbc:StreetName>
-                <cbc:CityName>City</cbc:CityName>
+                <cbc:StreetName>Warehouse Road 5</cbc:StreetName>
+                <cbc:CityName>Melbourne</cbc:CityName>
                 <cbc:PostalZone>3000</cbc:PostalZone>
                 <cac:Country>
                     <cbc:IdentificationCode>AU</cbc:IdentificationCode>
@@ -46,12 +46,12 @@
         <cac:Party>
 
             <cac:PartyName>
-                <cbc:Name>Buyer Test</cbc:Name>
+                <cbc:Name>Football Club Buyer Ltd</cbc:Name>
             </cac:PartyName>
 
             <cac:PostalAddress>
-                <cbc:StreetName>Street 1</cbc:StreetName>
-                <cbc:CityName>City</cbc:CityName>
+                <cbc:StreetName>Buyer Street 12</cbc:StreetName>
+                <cbc:CityName>Sydney</cbc:CityName>
                 <cbc:PostalZone>2000</cbc:PostalZone>
                 <cac:Country>
                     <cbc:IdentificationCode>AU</cbc:IdentificationCode>
@@ -68,9 +68,9 @@
 
         <cbc:ID>SHIP1</cbc:ID>
         <cbc:HandlingCode>Normal</cbc:HandlingCode>
-        <cbc:Information>Handled carefully</cbc:Information>  <cac:GoodsItem>
-            <cbc:Description>Sample item</cbc:Description>
-            <cbc:Quantity unitCode="EA">5</cbc:Quantity>
+        <cbc:Information>Standard handling</cbc:Information>  <cac:GoodsItem>
+            <cbc:Description>A football</cbc:Description>
+            <cbc:Quantity unitCode="FO">7</cbc:Quantity>
         </cac:GoodsItem>
      <cac:ShipmentStage>
             <cac:TransportMeans>
@@ -80,9 +80,9 @@
 
         <cac:Delivery>
             <cac:DeliveryAddress>
-                <cbc:StreetName>Del St</cbc:StreetName>
-                <cbc:CityName>Del City</cbc:CityName>
-                <cbc:PostalZone>4000</cbc:PostalZone>
+                <cbc:StreetName>1 Road</cbc:StreetName>
+                <cbc:CityName>Sydney</cbc:CityName>
+                <cbc:PostalZone>2000</cbc:PostalZone>
                 <cac:Country>
                     <cbc:IdentificationCode>AU</cbc:IdentificationCode>
                 </cac:Country>
@@ -90,7 +90,7 @@
         </cac:Delivery>
 
         <cac:TransportHandlingUnit>
-            <cbc:ID>TU001</cbc:ID>
+            <cbc:ID>TU1</cbc:ID>
         </cac:TransportHandlingUnit>
 
     </cac:Shipment>
@@ -102,22 +102,22 @@
 
         <cbc:ID>1</cbc:ID>
 
-        <cbc:DeliveredQuantity unitCode="EA">5</cbc:DeliveredQuantity>
+        <cbc:DeliveredQuantity unitCode="FO">7</cbc:DeliveredQuantity>
 
         <cac:OrderLineReference>
             <cbc:LineID>1</cbc:LineID>
         </cac:OrderLineReference>
 
         <cac:Item>
-            <cbc:Description>Sample item</cbc:Description>
-            <cbc:Name>Item A</cbc:Name>
+            <cbc:Description>A football</cbc:Description>
+            <cbc:Name>Football Boots</cbc:Name>
 
             <cac:BuyersItemIdentification>
-                <cbc:ID>BID-1</cbc:ID>
+                <cbc:ID>BID1</cbc:ID>
             </cac:BuyersItemIdentification>
 
             <cac:SellersItemIdentification>
-                <cbc:ID>SID-1</cbc:ID>
+                <cbc:ID>SID1</cbc:ID>
             </cac:SellersItemIdentification>
         </cac:Item>
 
