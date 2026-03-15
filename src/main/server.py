@@ -5,6 +5,7 @@ from main import generate_despatch_advice
 from despatch_models import DespatchRequest
 import os
 from uuid import uuid4
+from datetime import datetime, timezone
 
 app = FastAPI()
 
@@ -32,7 +33,20 @@ def generate_despatch(request: DespatchRequest):
         TEMP_FILE["uuid"] = doc_uuid
         TEMP_FILE["file_path"] = file_path
 
-        return {"uuid": doc_uuid, "file_path": file_path, "message": "Despatch Advice created"}
+        time_created = datetime.now(timezone.utc)
+
+        return FileResponse(
+            TEMP_FILE["file_path"],
+            media_type="application/xml",
+            filename=f"Despatch_{TEMP_FILE['uuid']}.xml",
+            headers={
+                "Despatch-UUID": doc_uuid,
+                "Despatch-ID": request.despatch_id,
+                "Time-Created": time_created,
+                "Message": "Despatch Advice created"
+            }
+        )
+    
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
