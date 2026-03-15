@@ -28,3 +28,19 @@ python run.py
 ```
 
 Make sure you are in the src/main folder to run the command.
+
+---
+
+## 📝 API Documentation (Swagger)
+This project uses FastAPI, which automatically generates interactive API documentation using Swagger UI.
+
+Once the server is running, open your browser and go to:
+
+    http://localhost:8000/docs
+
+
+### From there, you can:
+
+* Test all endpoints interactively
+* See request/response schemas
+* Download generated Despatch Advice XML files
