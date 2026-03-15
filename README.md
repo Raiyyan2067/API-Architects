@@ -29,7 +29,7 @@ The project follows a modular architecture to separate API routing, logic, and d
 ### 1. Clone the repository
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/Raiyyan2067/API-Architects
 cd API-Architects
 ```
 
