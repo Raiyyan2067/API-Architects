@@ -41,7 +41,7 @@ def generate_despatch(request: DespatchRequest):
         return FileResponse(
             TEMP_FILE["file_path"],
             media_type="application/xml",
-            filename=f"Despatch_{TEMP_FILE['uuid']}.xml",
+            filename=f"Despatch_{request.despatch_id}_{doc_uuid}_{time_created}.xml",
             status_code = 201,
             headers={
                 "Despatch-UUID": doc_uuid,
