@@ -8,4 +8,4 @@ python-dotenv==1.2.2
 python-multipart==0.0.22
 email-validator==2.3.0
 pytest==9.0.2
-mangum
+mangum==0.21.0
