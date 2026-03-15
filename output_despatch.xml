@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DespatchAdvice
+    xmlns="urn:oasis:names:specification:ubl:schema:xsd:DespatchAdvice-2"
+    xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+    xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
+
+    <!-- ===================== -->
+    <!--  BASIC DOCUMENT INFO  -->
+    <!-- ===================== -->
+    <cbc:ID>DTEST01</cbc:ID>
+    <cbc:IssueDate>2025-03-10</cbc:IssueDate>  <cbc:IssueTime>09:00:00</cbc:IssueTime>  <cbc:DespatchAdviceTypeCode>
+        Dispatch</cbc:DespatchAdviceTypeCode>
+
+
+    <!-- ===================== -->
+    <!--  ORDER REFERENCE      -->
+    <!-- ===================== -->
+    <cac:OrderReference>
+        <cbc:ID>ORDER123</cbc:ID>  </cac:OrderReference>
+
+    <!-- ==================================== -->
+    <!--  DESPATCH SUPPLIER (SELLER / SHIPPER) -->
+    <!-- ==================================== -->
+    <cac:DespatchSupplierParty>
+        <cac:Party>
+            <cac:PartyName>
+                <cbc:Name>Seller Test</cbc:Name>
+            </cac:PartyName>
+
+            <cac:PostalAddress>
+                <cbc:StreetName>Street 2</cbc:StreetName>
+                <cbc:CityName>City</cbc:CityName>
+                <cbc:PostalZone>3000</cbc:PostalZone>
+                <cac:Country>
+                    <cbc:IdentificationCode>AU</cbc:IdentificationCode>
+                </cac:Country>
+            </cac:PostalAddress>
+
+        </cac:Party>
+    </cac:DespatchSupplierParty>
+
+    <!-- ====================================== -->
+    <!--  DELIVERY CUSTOMER (BUYER / RECEIVER)  -->
+    <!-- ====================================== -->
+    <cac:DeliveryCustomerParty>
+        <cac:Party>
+
+            <cac:PartyName>
+                <cbc:Name>Buyer Test</cbc:Name>
+            </cac:PartyName>
+
+            <cac:PostalAddress>
+                <cbc:StreetName>Street 1</cbc:StreetName>
+                <cbc:CityName>City</cbc:CityName>
+                <cbc:PostalZone>2000</cbc:PostalZone>
+                <cac:Country>
+                    <cbc:IdentificationCode>AU</cbc:IdentificationCode>
+                </cac:Country>
+            </cac:PostalAddress>
+
+        </cac:Party>
+    </cac:DeliveryCustomerParty>
+
+    <!-- ===================== -->
+    <!--      SHIPMENT INFO    -->
+    <!-- ===================== -->
+    <cac:Shipment>
+
+        <cbc:ID>SHIP1</cbc:ID>
+        <cbc:HandlingCode>Normal</cbc:HandlingCode>
+        <cbc:Information>Handled carefully</cbc:Information>  <cac:GoodsItem>
+            <cbc:Description>Sample item</cbc:Description>
+            <cbc:Quantity unitCode="EA">5</cbc:Quantity>
+        </cac:GoodsItem>
+     <cac:ShipmentStage>
+            <cac:TransportMeans>
+                <cbc:TransportMeansTypeCode>Land</cbc:TransportMeansTypeCode>
+            </cac:TransportMeans>
+        </cac:ShipmentStage>
+
+        <cac:Delivery>
+            <cac:DeliveryAddress>
+                <cbc:StreetName>Del St</cbc:StreetName>
+                <cbc:CityName>Del City</cbc:CityName>
+                <cbc:PostalZone>4000</cbc:PostalZone>
+                <cac:Country>
+                    <cbc:IdentificationCode>AU</cbc:IdentificationCode>
+                </cac:Country>
+            </cac:DeliveryAddress>
+        </cac:Delivery>
+
+        <cac:TransportHandlingUnit>
+            <cbc:ID>TU001</cbc:ID>
+        </cac:TransportHandlingUnit>
+
+    </cac:Shipment>
+
+    <!-- ===================== -->
+    <!--    DESPATCH LINES    -->
+    <!-- ===================== -->
+     <cac:DespatchLine>
+
+        <cbc:ID>1</cbc:ID>
+
+        <cbc:DeliveredQuantity unitCode="EA">5</cbc:DeliveredQuantity>
+
+        <cac:OrderLineReference>
+            <cbc:LineID>1</cbc:LineID>
+        </cac:OrderLineReference>
+
+        <cac:Item>
+            <cbc:Description>Sample item</cbc:Description>
+            <cbc:Name>Item A</cbc:Name>
+
+            <cac:BuyersItemIdentification>
+                <cbc:ID>BID-1</cbc:ID>
+            </cac:BuyersItemIdentification>
+
+            <cac:SellersItemIdentification>
+                <cbc:ID>SID-1</cbc:ID>
+            </cac:SellersItemIdentification>
+        </cac:Item>
+
+    </cac:DespatchLine>
+     </DespatchAdvice>
