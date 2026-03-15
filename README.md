@@ -9,7 +9,6 @@ SENG2021 Group Project
 
 ```bash
 git clone https://github.com/Raiyyan2067/API-Architects.git
-cd API-Architects
 ```
 
 2. Install the required dependencies:
