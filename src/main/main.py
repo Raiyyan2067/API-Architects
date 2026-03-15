@@ -4,8 +4,7 @@ from xmlschema import XMLSchema, XMLSchemaException
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
-XSD_PATH = os.path.join(BASE_DIR, "xsd", "maindoc",
-                        "UBL-DespatchAdvice-2.1.xsd")
+XSD_PATH = os.path.join(BASE_DIR, "xsd", "maindoc", "UBL-DespatchAdvice-2.1.xsd")
 
 env = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
 schema = XMLSchema(XSD_PATH)

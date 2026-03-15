@@ -2,3 +2,4 @@ Environment/
 __pycache__/
 *.pyc
 .env
+src/main/generated/

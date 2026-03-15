@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 
-from main import testMessage, generate_despatch_advice
+from main import generate_despatch_advice
 from despatch_models import DespatchRequest
 import os
 from uuid import uuid4
