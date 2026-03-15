@@ -5,7 +5,7 @@ from main import generate_despatch_advice
 from despatch_models import DespatchRequest
 import os
 from uuid import uuid4
-from datetime import datetime, timezone
+from datetime import datetime
 
 app = FastAPI()
 
@@ -26,14 +26,16 @@ def generate_despatch(request: DespatchRequest):
     try:
         xml_content = generate_despatch_advice(request)
         doc_uuid = str(uuid4())
-        file_path = os.path.join(GENERATED_DIR, "despatch.txt")
+        time_created = datetime.utcnow().strftime("%Y%m%dT%H%M%S")
+
+        filename = f"Despatch_{request.despatch_id}_{doc_uuid}_{time_created}.xml"
+        file_path = os.path.join(GENERATED_DIR, filename)
+
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(xml_content)
 
         TEMP_FILE["uuid"] = doc_uuid
         TEMP_FILE["file_path"] = file_path
-
-        time_created = datetime.now(timezone.utc)
 
         return FileResponse(
             TEMP_FILE["file_path"],
@@ -42,8 +44,7 @@ def generate_despatch(request: DespatchRequest):
             headers={
                 "Despatch-UUID": doc_uuid,
                 "Despatch-ID": request.despatch_id,
-                "Time-Created": time_created,
-                "Message": "Despatch Advice created"
+                "Message": "Despatch Advice successfully created"
             }
         )
     
