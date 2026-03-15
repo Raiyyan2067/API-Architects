@@ -41,7 +41,7 @@ def generate_despatch(request: DespatchRequest):
 def list_despatch_advice():
     if not TEMP_FILE["file_path"]:
         raise HTTPException(status_code=404, detail="No Despatch Advice generated yet")
-    return FileResponse(TEMP_FILE["file_path"], media_type="application/xml", filename="latest_despatch.txt")
+    return FileResponse(TEMP_FILE["file_path"], media_type="application/xml", filename=f"Despatch_{TEMP_FILE['uuid']}.xml")
 
 # Retrieve a Despatch Advice document using its ID
 @app.get("/ubl/v2/despatch-advice/id/{id}")
