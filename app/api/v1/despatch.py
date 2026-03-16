@@ -12,9 +12,7 @@ router = APIRouter()
 
 # Adjusted BASE_DIR to point to the root from app/api/v1/
 # Goes up 3 levels: v1 -> api -> app -> project_root
-BASE_DIR = os.path.dirname(os.path.dirname(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-GENERATED_DIR = os.path.join(BASE_DIR, "generated")
+GENERATED_DIR = "/tmp/generated"
 os.makedirs(GENERATED_DIR, exist_ok=True)
 
 TEMP_FILE = {"uuid": None, "file_path": None}
