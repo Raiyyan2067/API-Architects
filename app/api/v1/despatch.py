@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import StreamingResponse
 import os
+import io
 from uuid import uuid4
 from datetime import datetime, timezone
 import boto3
@@ -19,48 +20,54 @@ BUCKET_NAME = "ubl-despatch-files-393035998882-ap-southeast-2-an"
 GENERATED_DIR = "/tmp/generated"
 os.makedirs(GENERATED_DIR, exist_ok=True)
 
-TEMP_FILE = {"uuid": None, "file_path": None}
 
 # Create a new UBL Despatch Advice document
-
 
 @router.post("/generate", status_code=201)
 def generate_despatch(request: DespatchRequest):
     try:
+        # Generate XML content
         xml_content = generate_despatch_advice(request)
         doc_uuid = str(uuid4())
         time_created = datetime.now(timezone.utc).strftime("%Y-%m-%dT-%H%M%S")
 
+        # S3 file name
         filename = f"Despatch_{request.despatch_id}_{doc_uuid}_{time_created}.xml"
-        file_path = os.path.join(GENERATED_DIR, filename)
 
+        # Upload to S3
         s3.put_object(
             Bucket=BUCKET_NAME,
             Key=filename,
             Body=xml_content,
-            ContentType="application/xml"
+            ContentType="application/xml",
+            ACL="public-read"  
         )
 
-        TEMP_FILE["uuid"] = doc_uuid
-        TEMP_FILE["file_path"] = file_path
+        # Stream from S3
+        s3_obj = s3.get_object(Bucket=BUCKET_NAME, Key=filename)
+        stream = io.BytesIO(s3_obj['Body'].read())
 
-        return FileResponse(
-            TEMP_FILE["file_path"],
+        # Set headers
+        headers = {
+            "Despatch-UUID": doc_uuid,
+            "Despatch-ID": request.despatch_id,
+            "Message": "Despatch Advice successfully created"
+        }
+
+        return StreamingResponse(
+            stream,
             media_type="application/xml",
-            filename=f"Despatch_{request.despatch_id}_{doc_uuid}_{time_created}.xml",
-            status_code = 201,
-            headers={
-                "Despatch-UUID": doc_uuid,
-                "Despatch-ID": request.despatch_id,
-                "Message": "Despatch Advice successfully created"
-            }
+            headers=headers,
+            status_code=201
         )
 
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-# Retrieve a list of all Despatch Advice documents
 
+# Returns list of all XML documents
 
 @router.get("/list")
 def list_despatch_advice():
@@ -74,7 +81,6 @@ def list_despatch_advice():
     return {"files": files}
 
 # Retrieve a Despatch Advice document using its ID
-
 
 @router.get("/id/{id}")
 def get_despatch_advice_by_id(id: str):
