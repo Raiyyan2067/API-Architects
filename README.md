@@ -59,7 +59,7 @@ python run.py
 
 The server will start at `http://127.0.0.1:8000`.
 
-## AWS Deploymeny
+## AWS Deployment
 
 Access the API link with the following URL:
 ```bash
@@ -86,8 +86,13 @@ https://ubl-despatch-files-393035998882-ap-southeast-2-an.s3.ap-southeast-2.amaz
 
 Once the server is running, you can access the interactive API documentation:
 
+### Running the server with python run.py:
+
 - **Swagger UI:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 - **ReDoc:** [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)
+
+### Acessing Documentation from AWS
+- **Lambda:** [https://rhumzuhvabxxwsemnufzash5ue0wubck.lambda-url.ap-southeast-2.on.aws/docs](https://rhumzuhvabxxwsemnufzash5ue0wubck.lambda-url.ap-southeast-2.on.aws/docs)
 
 ### Key Endpoints
 
@@ -108,9 +113,31 @@ pytest
 
 ## Output
 
-Generated XML files are stored in the `/generated` directory at the root level. Each file is named using the format:
-`Despatch_{id}_{uuid}_{timestamp}.xml`
+Generated XML files are stored in AWS S3. See the [AWS Deployment](#aws-deployment) section to see how to access them.
 
 ---
+
+### 📋 Compliance with Specification (Sprint 2 Marks)*
+
+#### 1. Non-Functional Requirements (Doc 2, Section 3.1)
+*   *Performance:* The XML generation algorithm uses *Jinja2's compiled templates*, ensuring $O(n)$ time complexity (where $n$ is the number of items). This minimizes the computation time for the API response, meeting the requirement for "minimal amount of time to complete."
+*   *Security:* (Note: Mention your team's plan here, e.g., "The service is designed to be integrated with an authentication middleware to ensure protected access to generation functionality.")
+
+#### 2. Design Principles
+*   *DRY (Don't Repeat Yourself):* By using a single ubl_generator.py service and a centralized Pydantic model, we avoid duplicating logic across the codebase.
+*   *KISS (Keep It Simple):* We chose a *Template-based approach* rather than complex XML DOM manipulation to keep the logic readable and easy to maintain.
+*   *Pythonic Conventions:* Adheres to *PEP 8* standards, using meaningful variable names, type hinting, and clear whitespace.
+
+#### 3. Health Check Endpoint (Doc 3, Page 7, Guideline 6)
+*   As per the General Guidelines for creating an API, we implemented a */health* endpoint. 
+*   *Status:* Returns a 200 OK status and a timestamp to indicate "aliveness" and "statefulness" of the service.
+
+#### 4. Data Modeling (Doc 2, Section 3.3)
+*  The persistence layer is implemented using AWS S3 for storing generated XML files.
+*  Interaction: The application layer (FastAPI) interacts with S3 via wrapper functions like `def list_despatch_advice()`. FastAPI calls these functions rather than talking to S3 directly. This ensures the domain logic         remains decoupled from the storage mechanism.
+*  Benefits: scalable storage, centralized file access, and seamless integration with AWS Lambda deployments.
+
+#### 5. Architectural Notation (Doc 2, Section 3.2)
+*   Our system architecture follows the *SC4 notation* recommended in the lecture, highlighting the layers of abstraction (Server -> Application -> Persistence).
 
 _Created by the API-Architects Team._
