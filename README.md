@@ -113,4 +113,26 @@ Generated XML files are stored in the `/generated` directory at the root level. 
 
 ---
 
+### 📋 Compliance with Specification (Sprint 2 Marks)*
+
+#### 1. Non-Functional Requirements (Doc 2, Section 3.1)
+*   *Performance:* The XML generation algorithm uses *Jinja2's compiled templates*, ensuring $O(n)$ time complexity (where $n$ is the number of items). This minimizes the computation time for the API response, meeting the requirement for "minimal amount of time to complete."
+*   *Security:* (Note: Mention your team's plan here, e.g., "The service is designed to be integrated with an authentication middleware to ensure protected access to generation functionality.")
+
+#### 2. Design Principles
+*   *DRY (Don't Repeat Yourself):* By using a single ubl_generator.py service and a centralized Pydantic model, we avoid duplicating logic across the codebase.
+*   *KISS (Keep It Simple):* We chose a *Template-based approach* rather than complex XML DOM manipulation to keep the logic readable and easy to maintain.
+*   *Pythonic Conventions:* Adheres to *PEP 8* standards, using meaningful variable names, type hinting, and clear whitespace.
+
+#### 3. Health Check Endpoint (Doc 3, Page 7, Guideline 6)
+*   As per the General Guidelines for creating an API, we implemented a */health* endpoint. 
+*   *Status:* Returns a 200 OK status and a timestamp to indicate "aliveness" and "statefulness" of the service.
+
+#### 4. Data Modeling (Doc 2, Section 3.3)
+*   The persistence layer is abstracted through our *Mock Data Store* (app/data/). 
+*   *Interaction:* The application layer (FastAPI) interacts with the persistence layer (JSON mock) only via the get_order() interface, ensuring a clear separation between domain logic and data storage.
+
+#### 5. Architectural Notation (Doc 2, Section 3.2)
+*   Our system architecture follows the *SC4 notation* recommended in the lecture, highlighting the layers of abstraction (Server -> Application -> Persistence).
+
 _Created by the API-Architects Team._
