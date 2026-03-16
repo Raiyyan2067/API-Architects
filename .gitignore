@@ -2,4 +2,8 @@ Environment/
 __pycache__/
 *.pyc
 .env
-src/main/generated/
+.venv
+venv/
+generated/
+package/
+.zip
