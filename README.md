@@ -62,13 +62,24 @@ The server will start at `http://127.0.0.1:8000`.
 ## AWS Deploymeny
 
 Access the API link with the following URL:
-`https://rhumzuhvabxxwsemnufzash5ue0wubck.lambda-url.ap-southeast-2.on.aws/`
+```bash
+https://rhumzuhvabxxwsemnufzash5ue0wubck.lambda-url.ap-southeast-2.on.aws
+```
+
+Access routes by adding the endpoint to the end of the URL:
+```bash
+https://rhumzuhvabxxwsemnufzash5ue0wubck.lambda-url.ap-southeast-2.on.aws/ubl/v2/despatch-advice/list
+```
 
 Previous XML files can be accessed by adding the file name to the end of the following URL:
-`https://ubl-despatch-files-393035998882-ap-southeast-2-an.s3.ap-southeast-2.amazonaws.com`
+```bash
+https://ubl-despatch-files-393035998882-ap-southeast-2-an.s3.ap-southeast-2.amazonaws.com
+```
 
 For example:
-`https://ubl-despatch-files-393035998882-ap-southeast-2-an.s3.ap-southeast-2.amazonaws.com/Despatch_D001_b0e63b53-f9bd-49fa-8983-f30c178b3e95_2026-03-16T-021144.xml`
+```bash
+https://ubl-despatch-files-393035998882-ap-southeast-2-an.s3.ap-southeast-2.amazonaws.com/Despatch_D001_b0e63b53-f9bd-49fa-8983-f30c178b3e95_2026-03-16T-021144.xml
+```
 
 
 ## API Documentation
