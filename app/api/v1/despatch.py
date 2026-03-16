@@ -12,7 +12,7 @@ from app.models.despatch_models import DespatchRequest
 router = APIRouter()
 
 s3 = boto3.client("s3")
-BUCKET_NAME = "ubl-despatch-files"
+BUCKET_NAME = "ubl-despatch-files-393035998882-ap-southeast-2-an"
 
 # Adjusted BASE_DIR to point to the root from app/api/v1/
 # Goes up 3 levels: v1 -> api -> app -> project_root
@@ -34,8 +34,12 @@ def generate_despatch(request: DespatchRequest):
         filename = f"Despatch_{request.despatch_id}_{doc_uuid}_{time_created}.xml"
         file_path = os.path.join(GENERATED_DIR, filename)
 
-        with open(file_path, "w", encoding="utf-8") as f:
-            f.write(xml_content)
+        s3.put_object(
+            Bucket=BUCKET_NAME,
+            Key=filename,
+            Body=xml_content,
+            ContentType="application/xml"
+        )
 
         TEMP_FILE["uuid"] = doc_uuid
         TEMP_FILE["file_path"] = file_path
@@ -60,14 +64,10 @@ def generate_despatch(request: DespatchRequest):
 
 @router.get("/list")
 def list_despatch_advice():
-    files = os.listdir(GENERATED_DIR)
-    xml_files = [f for f in files]
-    if not xml_files:
-        raise HTTPException(
-            status_code=404, detail="No Despatch Advice generated yet")
-
-    file_data = [parse_filename(f) for f in xml_files]
-    return {"files": file_data}
+    response = s3.list_objects_v2(Bucket=BUCKET_NAME)
+    items = response.get("Contents", [])
+    files = [{"key": f["Key"], "last_modified": f["LastModified"].isoformat()} for f in items]
+    return {"files": files}
 
 # Retrieve a Despatch Advice document using its ID
 
