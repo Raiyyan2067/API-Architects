@@ -9,3 +9,4 @@ python-multipart==0.0.22
 email-validator==2.3.0
 pytest==9.0.2
 mangum==0.21.0
+boto3

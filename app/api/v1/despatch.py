@@ -3,12 +3,16 @@ from fastapi.responses import FileResponse
 import os
 from uuid import uuid4
 from datetime import datetime, timezone
+import boto3
 
 # Updated imports to match new project structure
 from app.core.ubl_generator import generate_despatch_advice, parse_filename
 from app.models.despatch_models import DespatchRequest
 
 router = APIRouter()
+
+s3 = boto3.client("s3")
+BUCKET_NAME = "ubl-despatch-files"
 
 # Adjusted BASE_DIR to point to the root from app/api/v1/
 # Goes up 3 levels: v1 -> api -> app -> project_root
