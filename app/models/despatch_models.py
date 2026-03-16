@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field, validator
-from typing import List
+from pydantic import BaseModel, Field, field_validator
+from typing import List, Optional
 
 
 class PartyAddress(BaseModel):
@@ -41,9 +41,9 @@ class LineItem(BaseModel):
     name: str
     description: str
     unit_code: str
-    quantity: int
+    quantity: float = Field(gt=0)
     seller_item_id: str
-    buyer_item_id: str
+    buyer_item_id: Optional[str] = None
 
 
 class DespatchRequest(BaseModel):
@@ -54,13 +54,15 @@ class DespatchRequest(BaseModel):
     shipment: Shipment
     despatch_items: List[LineItem]
 
-    @validator("issue_date")
-    def date_format(cls, v):
-        if len(v.split("-")) != 3:
-            raise ValueError("issue_date must be YYYY-MM-DD")
+    @field_validator("issue_date")
+    @classmethod
+    def validate_date(cls, v):
+        if len(v) != 10 or v[4] != "-" or v[7] != "-":
+            raise ValueError("Date must be YYYY-MM-DD")
         return v
 
-    @validator("issue_time")
+    @field_validator("issue_time")
+    @classmethod
     def time_format(cls, v):
         if ":" not in v:
             raise ValueError("issue_time must be HH:MM:SS")
