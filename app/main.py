@@ -12,5 +12,3 @@ app.include_router(despatch.router, prefix="/ubl/v2/despatch-advice")
 app.include_router(health.router, prefix="/ubl/v2/despatch-advice")
 
 handler = Mangum(app)
-
-#test
