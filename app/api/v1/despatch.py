@@ -66,6 +66,10 @@ def generate_despatch(request: DespatchRequest):
 def list_despatch_advice():
     response = s3.list_objects_v2(Bucket=BUCKET_NAME)
     items = response.get("Contents", [])
+
+    if not items:
+        raise HTTPException(status_code=404, detail="No Despatch Advice generated yet")
+
     files = [{"key": f["Key"], "last_modified": f["LastModified"].isoformat()} for f in items]
     return {"files": files}
 
