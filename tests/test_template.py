@@ -1,7 +1,11 @@
-from app.core.ubl_generator import generate_despatch_advice
+from app.core import ubl_generator as gen
 
+def test_generate_minimal_xml(monkeypatch):
+    """Test minimal payload renders correctly in XML"""
 
-def test_generate_minimal_xml():
+    monkeypatch.setattr(gen, "get_order", lambda order_id: {"order_id": order_id})
+    monkeypatch.setattr(gen, "validate_xml_against_xsd", lambda _xml: None)
+
     data = {
         "despatch_id": "D123",
         "issue_date": "2025-03-10",
@@ -16,6 +20,8 @@ def test_generate_minimal_xml():
         ]
     }
 
-    xml = generate_despatch_advice(data)
+    xml = gen.generate_despatch_advice(data)
+
     assert "<cbc:ID>D123</cbc:ID>" in xml
     assert "<cbc:Name>Test Buyer</cbc:Name>" in xml
+    assert "<cbc:Name>Test Seller</cbc:Name>" in xml

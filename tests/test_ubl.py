@@ -11,14 +11,15 @@ def valid_request():
         issue_date="2025-03-10",
         issue_time="10:00:00",
         order=OrderInfo(
-            order_id="ORDER-001",
+            order_id="ORDER-123",
             buyer=Party(name="Buyer", address=PartyAddress(
                 street="s", city="c", postcode="p", country="AU")),
             seller=Party(name="Seller", address=PartyAddress(
-                street="s", city="c", postcode="p", country="AU"))
+                street="s", city="c", postcode="p", country="AU")),
+            sales_order_id="SO-12345"
         ),
         shipment=Shipment(
-            shipment_id="S1",
+            shipment_id="SHP01",
             handling_code="Normal",
             information="Standard handling",
             delivery_address=DeliveryAddress(
@@ -42,13 +43,12 @@ def valid_request():
 @patch("app.core.ubl_generator.get_order")
 def test_generate_xml_success(mock_get_order):
     """Tests that a valid request produces valid XML content."""
-    # Mock the database to return a dummy order so the test doesn't need the JSON file
-    mock_get_order.return_value = {"order_id": "ORDER-001"}
+    mock_get_order.return_value = {"order_id": "ORDER-123"}
 
     req = valid_request()
     xml = generate_despatch_advice(req)
 
-    # Assertions: Check for specific UBL elements
+    # Check key UBL fields
     assert "<DespatchAdvice" in xml
     assert "<cbc:ID>D100</cbc:ID>" in xml
     assert "DeliveredQuantity" in xml
@@ -58,18 +58,16 @@ def test_generate_xml_success(mock_get_order):
 
 @patch("app.core.ubl_generator.get_order")
 def test_order_not_found_error(mock_get_order):
-    """Tests that the generator raises an error if the Order ID doesn't exist."""
-    mock_get_order.return_value = None  # Simulate order not found
-
+    """Tests generator raises error if Order ID does not exist."""
+    mock_get_order.return_value = None
     req = valid_request()
     with pytest.raises(ValueError, match="Order does not exist"):
         generate_despatch_advice(req)
 
 
 def test_pydantic_validation_invalid_date():
-    """Tests that Pydantic catches bad date formats before generation starts."""
+    """Tests that Pydantic catches bad date formats."""
     with pytest.raises(Exception):
-        # Invalid date format (missing DD)
         DespatchRequest(
             despatch_id="D",
             issue_date="2025-03",
@@ -81,38 +79,38 @@ def test_pydantic_validation_invalid_date():
 
 
 def test_pydantic_validation_negative_quantity():
-    """Tests that Pydantic prevents shipping negative amounts."""
+    """Tests Pydantic prevents negative quantities."""
     req_data = valid_request().model_dump()
-    req_data['despatch_items'][0]['quantity'] = -5.0  # Illegal quantity
-
+    req_data['despatch_items'][0]['quantity'] = -5.0
     with pytest.raises(Exception):
         DespatchRequest(**req_data)
 
 
 @patch("app.core.ubl_generator.get_order")
 def test_missing_top_level_field(mock_get_order):
-    """Tests generator-level validation for missing mandatory fields."""
-    mock_get_order.return_value = {"order_id": "ORDER-001"}
+    """Tests generator validation for missing mandatory fields."""
+    mock_get_order.return_value = {"order_id": "ORDER-123"}
 
-    req = valid_request()
-    # Pydantic might catch this, but we test the generator's safety check too
-    req_dict = req.model_dump()
+    req_dict = valid_request().model_dump()
     req_dict['shipment'] = None
-
     with pytest.raises(ValueError, match="Missing required field: shipment"):
         generate_despatch_advice(req_dict)
 
 
-def test_success():
+@patch("app.core.ubl_generator.get_order")
+def test_success(mock_get_order):
+    mock_get_order.return_value = {"order_id": "ORDER-123"}
     req = valid_request()
     xml = generate_despatch_advice(req)
     assert "<DespatchAdvice" in xml
 
 
-def test_missing_required_field():
+@patch("app.core.ubl_generator.get_order")
+def test_missing_required_field(mock_get_order):
+    mock_get_order.return_value = {"order_id": "ORDER-123"}
     req = valid_request()
     req.despatch_id = None
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         generate_despatch_advice(req)
 
 

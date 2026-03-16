@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 import boto3
 
 # Updated imports to match new project structure
-from app.core.ubl_generator import generate_despatch_advice, parse_filename
+from app.core.ubl_generator import generate_despatch_advice
 from app.models.despatch_models import DespatchRequest
 
 router = APIRouter()

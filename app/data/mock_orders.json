@@ -4,6 +4,7 @@
   "issue_time": "12:00:00",
   "order": {
     "order_id": "ORDER123",
+    "sales_order_id": "SO-99887",
     "buyer": {
       "name": "Tech Buyer Ltd",
       "address": {
@@ -21,8 +22,7 @@
         "postcode": "3000",
         "country": "AU"
       }
-    },
-    "sales_order_id": "SO-99887"
+    }
   },
   "shipment": {
     "shipment_id": "SHP01",
