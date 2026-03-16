@@ -1,0 +1,141 @@
+HTTP/1.1 201 Created
+Date: Mon, 16 Mar 2026 00:59:26 GMT
+Content-Type: application/xml
+Content-Length: 4193
+Connection: keep-alive
+x-amzn-RequestId: 7d77037a-331c-44a7-acb3-d3d855ff0795
+last-modified: Mon, 16 Mar 2026 00:59:26 GMT
+content-disposition: attachment; filename="Despatch_D123_7053f0df-1f89-4905-bc6a-e1b887a7bc0a_2026-03-16T-005926.xml"
+message: Despatch Advice successfully created
+x-amzn-Remapped-content-length: 4193
+despatch-uuid: 7053f0df-1f89-4905-bc6a-e1b887a7bc0a
+despatch-id: D123
+etag: "f82678a006c345fcecd5cbf4e4627606"
+X-Amzn-Trace-Id: Root=1-69b755ee-055c92c0508cabd135575593;Parent=7e90c82baa8011b9;Sampled=0;Lineage=1:d253e49a:0
+accept-ranges: bytes
+
+<?xml version="1.0" encoding="UTF-8"?>
+<DespatchAdvice
+    xmlns="urn:oasis:names:specification:ubl:schema:xsd:DespatchAdvice-2"
+    xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+    xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
+
+    <!-- ===================== -->
+    <!--  BASIC DOCUMENT INFO  -->
+    <!-- ===================== -->
+    <cbc:ID>D123</cbc:ID>
+    <cbc:IssueDate>2025-03-10</cbc:IssueDate>  <cbc:IssueTime>10:00:00</cbc:IssueTime>  <cbc:DespatchAdviceTypeCode>
+        Dispatch</cbc:DespatchAdviceTypeCode>
+
+
+    <!-- ===================== -->
+    <!--  ORDER REFERENCE      -->
+    <!-- ===================== -->
+    <cac:OrderReference>
+        <cbc:ID>ORDER123</cbc:ID>  <cbc:SalesOrderID>SO-99887</cbc:SalesOrderID>  </cac:OrderReference>
+
+    <!-- ==================================== -->
+    <!--  DESPATCH SUPPLIER (SELLER / SHIPPER) -->
+    <!-- ==================================== -->
+    <cac:DespatchSupplierParty>
+        <cac:Party>
+            <cac:PartyName>
+                <cbc:Name>Seller</cbc:Name>
+            </cac:PartyName>
+
+            <cac:PostalAddress>
+                <cbc:StreetName>B</cbc:StreetName>
+                <cbc:CityName>Melbourne</cbc:CityName>
+                <cbc:PostalZone>3000</cbc:PostalZone>
+                <cac:Country>
+                    <cbc:IdentificationCode>AU</cbc:IdentificationCode>
+                </cac:Country>
+            </cac:PostalAddress>
+
+        </cac:Party>
+    </cac:DespatchSupplierParty>
+
+    <!-- ====================================== -->
+    <!--  DELIVERY CUSTOMER (BUYER / RECEIVER)  -->
+    <!-- ====================================== -->
+    <cac:DeliveryCustomerParty>
+        <cac:Party>
+
+            <cac:PartyName>
+                <cbc:Name>Buyer</cbc:Name>
+            </cac:PartyName>
+
+            <cac:PostalAddress>
+                <cbc:StreetName>A</cbc:StreetName>
+                <cbc:CityName>Sydney</cbc:CityName>
+                <cbc:PostalZone>2000</cbc:PostalZone>
+                <cac:Country>
+                    <cbc:IdentificationCode>AU</cbc:IdentificationCode>
+                </cac:Country>
+            </cac:PostalAddress>
+
+        </cac:Party>
+    </cac:DeliveryCustomerParty>
+
+    <!-- ===================== -->
+    <!--      SHIPMENT INFO    -->
+    <!-- ===================== -->
+    <cac:Shipment>
+
+        <cbc:ID>SHIP1</cbc:ID>
+        <cbc:HandlingCode>Normal</cbc:HandlingCode>
+        <cbc:Information>Standard</cbc:Information>  <cac:GoodsItem>
+            <cbc:Description>Desc</cbc:Description>
+            <cbc:Quantity unitCode="EA">1</cbc:Quantity>
+        </cac:GoodsItem>
+     <cac:ShipmentStage>
+            <cac:TransportMeans>
+                <cbc:TransportMeansTypeCode>Land</cbc:TransportMeansTypeCode>
+            </cac:TransportMeans>
+        </cac:ShipmentStage>
+
+        <cac:Delivery>
+            <cac:DeliveryAddress>
+                <cbc:StreetName>1 Road</cbc:StreetName>
+                <cbc:CityName>Sydney</cbc:CityName>
+                <cbc:PostalZone>2000</cbc:PostalZone>
+                <cac:Country>
+                    <cbc:IdentificationCode>AU</cbc:IdentificationCode>
+                </cac:Country>
+            </cac:DeliveryAddress>
+        </cac:Delivery>
+
+        <cac:TransportHandlingUnit>
+            <cbc:ID>TU1</cbc:ID>
+        </cac:TransportHandlingUnit>
+
+    </cac:Shipment>
+
+    <!-- ===================== -->
+    <!--    DESPATCH LINES    -->
+    <!-- ===================== -->
+     <cac:DespatchLine>
+
+        <cbc:ID>1</cbc:ID>
+
+        <cbc:DeliveredQuantity unitCode="EA">1</cbc:DeliveredQuantity>
+
+        <cac:OrderLineReference>
+            <cbc:LineID>1</cbc:LineID>
+        </cac:OrderLineReference>
+
+        <cac:Item>
+            <cbc:Description>Desc</cbc:Description>
+            <cbc:Name>Item</cbc:Name>
+
+            <cac:BuyersItemIdentification>
+                <cbc:ID>BID1</cbc:ID>
+            </cac:BuyersItemIdentification>
+
+            <cac:SellersItemIdentification>
+                <cbc:ID>SID1</cbc:ID>
+            </cac:SellersItemIdentification>
+        </cac:Item>
+
+    </cac:DespatchLine>
+     </DespatchAdvice>
