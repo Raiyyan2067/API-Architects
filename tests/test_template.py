@@ -6,7 +6,7 @@ def test_generate_minimal_xml():
         "despatch_id": "D123",
         "issue_date": "2025-03-10",
         "order": {
-            "order_id": "ORDER123",
+            "order_id": "ORDER-001",
             "seller": {"name": "Test Seller"},
             "buyer": {"name": "Test Buyer"}
         },

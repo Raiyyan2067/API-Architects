@@ -1,6 +1,3 @@
-Here is a professional, updated `README.md` that reflects your new repository structure and provides clear instructions for anyone else (or yourself in the future) on how to use the project.
-
----
 
 # UBL Despatch Advice API
 
@@ -8,7 +5,7 @@ A FastAPI-based service designed to generate, validate, and manage UBL 2.1 Despa
 
 ## Project Structure
 
-The project follows a modular architecture to separate API routing, business logic, and data models.
+The project follows a modular architecture to separate API routing, logic, and data models.
 
 ```text
 .
@@ -32,7 +29,7 @@ The project follows a modular architecture to separate API routing, business log
 ### 1. Clone the repository
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/Raiyyan2067/API-Architects
 cd API-Architects
 ```
 
