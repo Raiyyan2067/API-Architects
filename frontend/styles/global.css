@@ -4,3 +4,38 @@ html, body {
     height: 100%;
     font-family: Arial;
 }
+
+body {
+    padding-top: 2%;
+    padding-left: 10%;
+    padding-right: 10%;
+}
+
+header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    padding-bottom: 2%;
+}
+
+footer {
+    padding-top: 2%;
+}
+
+#login-button {
+    display: none;
+}
+
+#logout-button {
+    display: none;
+}
+
+#login-form {
+    display: none;
+    padding-left: 2%;
+    padding-right: 2%;
+    padding-bottom: 2%;
+
+    max-width: 600px;
+}
