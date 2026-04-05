@@ -35,6 +35,6 @@ def login_user(request: LoginRequest, db: Session = Depends(get_db)):
 def logout_user():
     return {"message": "Logout successful"}
 
-@router.get_user("/me")
-def me(user: User = Depends(get_current_user)):
+@router.get("/me")
+def get_user(user: User = Depends(get_current_user)):
     return {"id": user.id, "username": user.username}
