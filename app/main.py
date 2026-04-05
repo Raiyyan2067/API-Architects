@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1 import auth, despatch, old_despatch, health
 from mangum import Mangum
 
@@ -8,6 +9,18 @@ from app.models import user_models
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="UBL Despatch API", version="2.1")
+
+origins = [
+    "http://localhost:8080",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins, # Use ["*"] to allow all (not recommended for production)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def root():
