@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Text
 from sqlalchemy.orm import relationship
 from datetime import datetime
+from pydantic import BaseModel
 from app.data.db import Base
 
 class User(Base):
@@ -12,6 +13,17 @@ class User(Base):
 
     despatches = relationship("Despatch", back_populates="user")
 
+class RegisterRequest(BaseModel):
+    username: str
+    password: str
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
 
 class Despatch(Base):
     __tablename__ = "despatches"
