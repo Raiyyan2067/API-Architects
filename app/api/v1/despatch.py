@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 import os
 import io
@@ -9,6 +9,10 @@ import boto3
 # Updated imports to match new project structure
 from app.core.ubl_generator import generate_despatch_advice
 from app.models.despatch_models import DespatchRequest
+from sqlalchemy.orm import Session
+from app.models.db_models import User, Despatch
+from app.data.db import get_db
+from app.core.auth import get_current_user
 
 router = APIRouter()
 
@@ -65,6 +69,31 @@ def generate_despatch(request: DespatchRequest):
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@router.post("/v2/generate", status_code=201)
+def generate_despatch(
+    request: DespatchRequest,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
+):
+    xml_content = generate_despatch_advice(request)
+
+    doc_uuid = str(uuid4())
+
+    despatch = Despatch(
+        uuid=doc_uuid,
+        despatch_id=request.despatch_id,
+        xml_content=xml_content,
+        user_id=user.id
+    )
+
+    db.add(despatch)
+    db.commit()
+
+    return {
+        "message": "Despatch created",
+        "uuid": doc_uuid
+    }
 
 
 # Returns list of all XML documents

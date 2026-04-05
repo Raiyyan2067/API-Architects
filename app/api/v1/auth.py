@@ -14,22 +14,13 @@ def register(user: RegisterRequest, db: Session = Depends(get_db)):
 
     new_user = User(
         username=user.username,
-        password_hash=hash_password(user.password)
+        hashed_password=hash_password(user.password)
     )
 
     db.add(new_user)
     db.commit()
 
     return {"message": "User registered"}
-
-@router.post("/login", response_model=TokenResponse)
-def login(request: LoginRequest, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.username == request.username).first()
-    if not user or not verify_password(request.password, user.hashed_password):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-
-    token = create_token(user.id)
-    return {"access_token": token}
 
 @router.post("/login", response_model=TokenResponse)
 def login(request: LoginRequest, db: Session = Depends(get_db)):

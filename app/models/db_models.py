@@ -9,7 +9,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True)
     username = Column(String, unique=True)
-    password_hash = Column(String)
+    hashed_password = Column(String)
 
     despatches = relationship("Despatch", back_populates="user")
 

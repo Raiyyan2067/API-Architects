@@ -2,6 +2,12 @@ from fastapi import FastAPI
 from app.api.v1 import despatch, auth, health
 from mangum import Mangum
 
+from app.data.db import engine, Base
+from app.models import db_models
+
+Base.metadata.drop_all(bind=engine)
+Base.metadata.create_all(bind=engine)
+
 app = FastAPI(title="UBL Despatch API", version="2.1")
 
 @app.get("/")
