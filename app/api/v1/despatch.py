@@ -1,87 +1,78 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 import os
 import io
 from uuid import uuid4
 from datetime import datetime, timezone
-import boto3
 
 # Updated imports to match new project structure
 from app.core.ubl_generator import generate_despatch_advice
 from app.models.despatch_models import DespatchRequest
+from sqlalchemy.orm import Session
+from app.models.user_models import User, Despatch
+from app.data.db import get_db
+from app.core.auth import get_current_user
 
-router = APIRouter()
+router = APIRouter(tags=["Despatch Advice (v2)"])
 
-s3 = boto3.client("s3")
-BUCKET_NAME = "ubl-despatch-files-393035998882-ap-southeast-2-an"
-
-# Adjusted BASE_DIR to point to the root from app/api/v1/
-# Goes up 3 levels: v1 -> api -> app -> project_root
-GENERATED_DIR = "/tmp/generated"
-os.makedirs(GENERATED_DIR, exist_ok=True)
+# Validate an incoming Order XML against the UBL schema
+@router.post("/validate")
+def validate_order():
+    return {"message": "validate_despatch_advice stub is working"}
 
 
-# Create a new UBL Despatch Advice document
-
+# Generatres an XML despatch advice file from a XML Order and returns a download to the generated file
 @router.post("/generate", status_code=201)
-def generate_despatch(request: DespatchRequest):
-    try:
-        # Generate XML content
-        xml_content = generate_despatch_advice(request)
-        doc_uuid = str(uuid4())
-        time_created = datetime.now(timezone.utc).strftime("%Y-%m-%dT-%H%M%S")
+def generate_despatch(
+    request: DespatchRequest,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
+):
+    # Generate the XML content
+    xml_content = generate_despatch_advice(request)
+    
+    # Generate a unique UUID for this despatch
+    doc_uuid = str(uuid4())
 
-        # S3 file name
-        filename = f"Despatch_{request.despatch_id}_{doc_uuid}_{time_created}.xml"
+    # Save the despatch in the database
+    despatch = Despatch(
+        uuid=doc_uuid,
+        despatch_id=request.despatch_id,
+        xml_content=xml_content,
+        user_id=user.id
+    )
+    
+    db.add(despatch)
+    db.commit()
 
-        # Upload to S3
-        s3.put_object(
-            Bucket=BUCKET_NAME,
-            Key=filename,
-            Body=xml_content,
-            ContentType="application/xml",
-            ACL="public-read"  
-        )
+    # Convert XML string to a BytesIO stream for download
+    xml_stream = io.BytesIO(xml_content.encode("utf-8"))
+    filename = f"Despatch_{request.despatch_id}_{doc_uuid}.xml"
 
-        # Stream from S3
-        s3_obj = s3.get_object(Bucket=BUCKET_NAME, Key=filename)
-        stream = io.BytesIO(s3_obj['Body'].read())
-
-        # Set headers
-        headers = {
+    # Return as a downloadable file
+    return StreamingResponse(
+        xml_stream,
+        media_type="application/xml",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
             "Despatch-UUID": doc_uuid,
             "Despatch-ID": request.despatch_id,
-            "Message": "Despatch Advice successfully created"
-        }
-
-        return StreamingResponse(
-            stream,
-            media_type="application/xml",
-            headers=headers,
-            status_code=201
-        )
-
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        },
+        status_code=201
+    )
 
 
-# Returns list of all XML documents
-
+# Returns list of all of a user's generated XML documents
 @router.get("/list")
 def list_despatch_advice():
-    response = s3.list_objects_v2(Bucket=BUCKET_NAME)
-    items = response.get("Contents", [])
+    return
 
-    if not items:
-        raise HTTPException(status_code=404, detail="No Despatch Advice generated yet")
-
-    files = [{"key": f["Key"], "last_modified": f["LastModified"].isoformat()} for f in items]
-    return {"files": files}
+# Returns list of all generated XML documents (admin only)
+@router.delete("/uuid/{uuid}")
+def list_all_despatch_advice():
+    return
 
 # Retrieve a Despatch Advice document using its ID
-
 @router.get("/id/{id}")
 def get_despatch_advice_by_id(id: str):
     return {
@@ -89,9 +80,8 @@ def get_despatch_advice_by_id(id: str):
         "id": id
     }
 
+
 # Retrieve a Despatch Advice document using its UUID
-
-
 @router.get("/uuid/{uuid}")
 def get_despatch_advice_by_uuid(uuid: str):
     return {
@@ -99,16 +89,8 @@ def get_despatch_advice_by_uuid(uuid: str):
         "uuid": uuid
     }
 
-# Validate a Despatch Advice XML against the UBL schema
-
-
-@router.post("/validate")
-def validate_despatch_advice():
-    return {"message": "validate_despatch_advice stub is working"}
 
 # Download the XML file for a Despatch Advice using its ID
-
-
 @router.get("/id/download/{id}")
 def download_despatch_advice_by_id(id: str):
     return {
@@ -116,9 +98,8 @@ def download_despatch_advice_by_id(id: str):
         "id": id
     }
 
+
 # Download the XML file for a Despatch Advice using its UUID
-
-
 @router.get("/uuid/download/{uuid}")
 def download_despatch_advice_by_uuid(uuid: str):
     return {
@@ -126,9 +107,8 @@ def download_despatch_advice_by_uuid(uuid: str):
         "uuid": uuid
     }
 
+
 # Delete a Despatch Advice document using its ID
-
-
 @router.delete("/id/{id}")
 def delete_despatch_advice_by_id(id: str):
     return {
@@ -136,8 +116,8 @@ def delete_despatch_advice_by_id(id: str):
         "id": id
     }
 
-# Delete a Despatch Advice document using its UUID
 
+# Delete a Despatch Advice document using its UUID
 @router.delete("/uuid/{uuid}")
 def delete_despatch_advice_by_uuid(uuid: str):
     return {

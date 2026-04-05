@@ -1,50 +1,52 @@
 {
-  "despatch_id": "D001",
-  "issue_date": "2026-03-15",
-  "issue_time": "12:00:00",
-  "order": {
-    "order_id": "ORDER123",
-    "sales_order_id": "SO-99887",
-    "buyer": {
-      "name": "Tech Buyer Ltd",
-      "address": {
-        "street": "Buyer Street 12",
+  "ORDER123": {
+    "despatch_id": "D001",
+    "issue_date": "2026-03-15",
+    "issue_time": "12:00:00",
+    "order": {
+      "order_id": "ORDER123",
+      "sales_order_id": "SO-99887",
+      "buyer": {
+        "name": "Tech Buyer Ltd",
+        "address": {
+          "street": "Buyer Street 12",
+          "city": "Sydney",
+          "postcode": "2000",
+          "country": "AU"
+        }
+      },
+      "seller": {
+        "name": "Supplier Pty Ltd",
+        "address": {
+          "street": "Warehouse Road 5",
+          "city": "Melbourne",
+          "postcode": "3000",
+          "country": "AU"
+        }
+      }
+    },
+    "shipment": {
+      "shipment_id": "SHP01",
+      "handling_code": "01",
+      "information": "Handle with care",
+      "delivery_address": {
+        "street": "789 St",
         "city": "Sydney",
         "postcode": "2000",
         "country": "AU"
-      }
+      },
+      "transport_unit_id": "TU01",
+      "transport_mode": "Air"
     },
-    "seller": {
-      "name": "Supplier Pty Ltd",
-      "address": {
-        "street": "Warehouse Road 5",
-        "city": "Melbourne",
-        "postcode": "3000",
-        "country": "AU"
+    "despatch_items": [
+      {
+        "name": "Item1",
+        "description": "Desc1",
+        "unit_code": "EA",
+        "quantity": 10,
+        "seller_item_id": "SI01",
+        "buyer_item_id": "BI01"
       }
-    }
-  },
-  "shipment": {
-    "shipment_id": "SHP01",
-    "handling_code": "01",
-    "information": "Handle with care",
-    "delivery_address": {
-      "street": "789 St",
-      "city": "Sydney",
-      "postcode": "2000",
-      "country": "AU"
-    },
-    "transport_unit_id": "TU01",
-    "transport_mode": "Air"
-  },
-  "despatch_items": [
-    {
-      "name": "Item1",
-      "description": "Desc1",
-      "unit_code": "EA",
-      "quantity": 10,
-      "seller_item_id": "SI01",
-      "buyer_item_id": "BI01"
-    }
-  ]
+    ]
+  }
 }
