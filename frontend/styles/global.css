@@ -23,19 +23,29 @@ footer {
     padding-top: 2%;
 }
 
-#login-button {
-    display: none;
-}
-
-#logout-button {
-    display: none;
-}
-
-#login-form {
+form {
     display: none;
     padding-left: 2%;
     padding-right: 2%;
     padding-bottom: 2%;
 
     max-width: 600px;
+}
+
+.adjacent {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+#register-button {
+    display: none;
+}
+
+#login-button {
+    display: none;
+}
+
+#logout-button {
+    display: none;
 }

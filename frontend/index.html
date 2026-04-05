@@ -12,18 +12,38 @@
     <header>
         <h1 id="page-title">API Architects</h1>
         <nav>
-            <button type="button" class="btn btn-success" id="login-button">login</button>
+            <div class="adjacent">
+                <button type="button" class="btn btn-warning" id="register-button">register</button>
+                <button type="button" class="btn btn-success" id="login-button">login</button>
+            </div>
             <button type="button" class="btn btn-danger" id="logout-button">logout</button>
         </nav>
     </header>
     <main>
-        <form class="page" id="login-form">
+        <form class="page" id="register-form">
+            <h2>Register</h2>
             <div class="mb-3">
-                <label for="login-username" class="form-label">Username</label>
+                <label for="register-form-username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="register-form-username">
+            </div>
+            <div class="mb-3">
+                <label for="register-form-password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="register-form-password">
+            </div>
+            <div class="mb-3">
+                <label for="register-form-confirm" class="form-label">Confirm Password</label>
+                <input type="password" class="form-control" id="register-form-confirm">
+            </div>
+            <button type="submit" class="btn btn-success" id="register-form-submit">Submit</button>
+        </form>
+        <form class="page" id="login-form">
+            <h2>Login</h2>
+            <div class="mb-3">
+                <label for="login-form-username" class="form-label">Username</label>
                 <input type="text" class="form-control" id="login-form-username">
             </div>
             <div class="mb-3">
-                <label for="login-password" class="form-label">Password</label>
+                <label for="login-form-password" class="form-label">Password</label>
                 <input type="password" class="form-control" id="login-form-password">
             </div>
             <button type="submit" class="btn btn-success" id="login-form-submit">Submit</button>

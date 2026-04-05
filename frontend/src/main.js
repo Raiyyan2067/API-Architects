@@ -1,8 +1,14 @@
 // Page Elements
 const pageTitle = document.getElementById("page-title");
 
+const registerButton = document.getElementById("register-button");
 const loginButton = document.getElementById("login-button");
 const logoutButton = document.getElementById("logout-button");
+const registerForm = document.getElementById("register-form");
+const registerUser = document.getElementById("register-form-username");
+const registerPass = document.getElementById("register-form-password");
+const registerConf = document.getElementById("register-form-confirm");
+const registerSubmit = document.getElementById("register-form-submit");
 const loginForm = document.getElementById("login-form");
 const loginUser = document.getElementById("login-form-username");
 const loginPass = document.getElementById("login-form-password");
@@ -10,6 +16,10 @@ const loginSubmit = document.getElementById("login-form-submit");
 
 pageTitle.addEventListener("click", () => {
     pageUpdate();
+})
+
+registerButton.addEventListener("click", () => {
+    pageUpdate("register-form");
 })
 
 loginButton.addEventListener("click", () => {
@@ -24,6 +34,31 @@ logoutButton.addEventListener("click", () => {
     })
 })
 
+registerForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    if (registerPass.value === registerConf.value && registerUser.value && registerPass.value) {
+        const body = {
+            "username": registerUser.value,
+            "password": registerPass.value,
+        }
+        apiCall("ubl/auth/register", "POST", body)
+        .then((response) => {
+            apiCall("ubl/auth/login", "POST", body)
+            .then((response) => {
+                setToken(response.access_token);
+                pageUpdate();
+            })
+        })
+    } else {
+        alert("Must enter username and password, and passwords must match");
+    }
+
+    registerUser.value = "";
+    registerPass.value = "";
+    registerConf.value = "";
+})
+
 loginForm.addEventListener("submit", (event) => {
     event.preventDefault();
 
@@ -34,7 +69,6 @@ loginForm.addEventListener("submit", (event) => {
     apiCall("ubl/auth/login", "POST", body)
     .then((response) => {
         setToken(response.access_token);
-        console.log(response);
         pageUpdate();
     })
 
@@ -49,9 +83,11 @@ loginForm.addEventListener("submit", (event) => {
 // Display login/logout buttons
 const pageUpdate = (pageId) => {
     if (getToken()) {
+        registerButton.style.display = 'none';
         loginButton.style.display = 'none';
         logoutButton.style.display = 'block';
     } else {
+        registerButton.style.display = 'block';
         loginButton.style.display = 'block';
         logoutButton.style.display = 'none';
     }
