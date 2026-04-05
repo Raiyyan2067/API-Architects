@@ -67,6 +67,10 @@ def generate_despatch(
 def list_despatch_advice():
     return
 
+# Returns list of all generated XML documents (admin only)
+@router.delete("/uuid/{uuid}")
+def list_all_despatch_advice():
+    return
 
 # Retrieve a Despatch Advice document using its ID
 @router.get("/id/{id}")
