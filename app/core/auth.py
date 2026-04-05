@@ -5,7 +5,7 @@ from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer
 from sqlalchemy.orm import Session
 from app.data.db import get_db
-from app.models.db_models import User
+from app.models.user_models import User
 
 SUPER_SECRET_KEY = "9f8c1e7c8b2a4f3d9e6a1c0b7d4e2f8a6c5d3b1e9f7a2c4d6b8e0f1a3c5d7e9"
 ALGORITHM = "HS256"
