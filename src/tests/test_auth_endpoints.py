@@ -33,11 +33,9 @@ def override_get_db():
 
 @pytest.fixture(scope="function")
 def client():
-    # fresh tables each test
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
 
-    # override the app DB dependency
     app.dependency_overrides[real_get_db] = override_get_db
 
     with TestClient(app) as c:
@@ -71,8 +69,6 @@ def login(client, username, password):
     return res
 
 
-# ----------------- Tests -----------------
-
 def test_register_user_success(client):
     res = client.post("/ubl/auth/register", json={"username": "newuser", "password": "pw123"})
     assert res.status_code == 200
@@ -83,7 +79,6 @@ def test_register_user_duplicate_username(client):
     client.post("/ubl/auth/register", json={"username": "dup", "password": "pw123"})
     res = client.post("/ubl/auth/register", json={"username": "dup", "password": "pw123"})
     assert res.status_code == 400
-    # Your code raises HTTPException(400, "Username already exists") so FastAPI uses "detail"
     assert "Username already exists" in str(res.json())
 
 
@@ -150,11 +145,10 @@ def test_admin_list_users_success_for_admin(client):
 def test_admin_delete_user(client):
     seed_admin_and_user()
 
-    # admin token
     admin_login = login(client, "admin", "admin123")
     admin_token = admin_login.json()["access_token"]
 
-    # fetch users to find user1 id
+
     users_res = client.get("/ubl/auth/admin/list-users", headers={"Authorization": f"Bearer {admin_token}"})
     user1 = None
     for u in users_res.json():
@@ -163,11 +157,9 @@ def test_admin_delete_user(client):
             break
     assert user1 is not None
 
-    # delete user1
     del_res = client.delete(f"/ubl/auth/admin/delete/{user1['id']}", headers={"Authorization": f"Bearer {admin_token}"})
     assert del_res.status_code == 200 or del_res.status_code == 204
 
-    # delete again should 404
     del_res2 = client.delete(f"/ubl/auth/admin/delete/{user1['id']}", headers={"Authorization": f"Bearer {admin_token}"})
     assert del_res2.status_code == 404
 
