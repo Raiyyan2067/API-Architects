@@ -1,14 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import StreamingResponse
-import os
-import io
+from sqlalchemy.orm import Session
 from uuid import uuid4
 from datetime import datetime, timezone
+import io
+import os
 
-# Updated imports to match new project structure
+from app.core.order_parser import parse_ubl_order
 from app.core.ubl_generator import generate_despatch_advice
-from app.models.despatch_models import DespatchRequest
-from sqlalchemy.orm import Session
 from app.models.user_models import User, Despatch
 from app.data.db import get_db
 from app.core.auth import get_current_user
@@ -16,47 +15,69 @@ from app.core.auth import get_current_user
 router = APIRouter(tags=["Despatch Advice (v2)"])
 
 # Validate an incoming Order XML against the UBL schema
+
+
 @router.post("/validate")
 def validate_order():
     return {"message": "validate_despatch_advice stub is working"}
 
 
 # Generatres an XML despatch advice file from a XML Order and returns a download to the generated file
+
+
 @router.post("/generate", status_code=201)
-def generate_despatch(
-    request: DespatchRequest,
+async def generate_despatch(
+    request: Request,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user)
+    user: User = Depends(get_current_user),
+    carrier: str = Query(default=""),
+    dispatch_date: str = Query(default=""),
+    notes: str = Query(default=""),
 ):
-    # Generate the XML content
-    xml_content = generate_despatch_advice(request)
-    
-    # Generate a unique UUID for this despatch
+    # --- NEW: validate Content-Type ---
+    content_type = request.headers.get("content-type", "")
+    if "xml" not in content_type:
+        raise HTTPException(
+            status_code=415, detail="Content-Type must be application/xml")
+
+    # --- NEW: read and parse the XML body ---
+    raw_body = await request.body()
+    if not raw_body:
+        raise HTTPException(status_code=400, detail="Request body is empty")
+
+    try:
+        order_data = parse_ubl_order(raw_body.decode("utf-8"))
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+    try:
+        xml_content = generate_despatch_advice(
+            order_data, carrier, dispatch_date, notes)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Generation failed: {e}")
+
     doc_uuid = str(uuid4())
 
-    # Save the despatch in the database
     despatch = Despatch(
         uuid=doc_uuid,
-        despatch_id=request.despatch_id,
+        despatch_id=order_data["order_id"],
         xml_content=xml_content,
         user_id=user.id
     )
-    
+
     db.add(despatch)
     db.commit()
 
-    # Convert XML string to a BytesIO stream for download
     xml_stream = io.BytesIO(xml_content.encode("utf-8"))
-    filename = f"Despatch_{request.despatch_id}_{doc_uuid}.xml"
+    filename = f"Despatch_{order_data['order_id']}_{doc_uuid}.xml"
 
-    # Return as a downloadable file
     return StreamingResponse(
         xml_stream,
         media_type="application/xml",
         headers={
             "Content-Disposition": f'attachment; filename="{filename}"',
             "Despatch-UUID": doc_uuid,
-            "Despatch-ID": request.despatch_id,
+            "Despatch-ID": order_data["order_id"],
         },
         status_code=201
     )
@@ -68,11 +89,15 @@ def list_despatch_advice():
     return
 
 # Returns list of all generated XML documents (admin only)
+
+
 @router.delete("/uuid/{uuid}")
 def list_all_despatch_advice():
     return
 
 # Retrieve a Despatch Advice document using its ID
+
+
 @router.get("/id/{id}")
 def get_despatch_advice_by_id(id: str):
     return {
