@@ -16,6 +16,9 @@ The project follows a modular architecture to separate API routing, logic, and d
 │   ├── services/          # Business logic layer (Placeholders)
 │   ├── templates/         # Jinja2 XML templates
 │   └── xsd/               # UBL 2.1 Schema definitions
+├── frontend/
+│   ├── src/               # Js files for the frontend
+|   ├── styles/            # Css style files for the frontend
 ├── data/                  # Mock data for testing (JSON)
 ├── generated/             # Output folder for generated XMLs (Local only)
 ├── tests/                 # Unit and integration tests
@@ -55,6 +58,16 @@ Start the server using the entry point script:
 
 ```bash
 python run.py
+```
+
+The server will start at `http://127.0.0.1:8000`.
+
+## Running the Frontend
+
+Navigate to the frontend directory, then start an http server with pyton:
+
+```bash
+python3 -m http.server 8080
 ```
 
 The server will start at `http://127.0.0.1:8000`.
