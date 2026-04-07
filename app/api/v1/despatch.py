@@ -27,35 +27,36 @@ def validate_order():
 
 @router.post("/generate", status_code=201)
 async def generate_despatch(
-    request: Request,
+    order_xml: UploadFile = File(...),
+    carrier: str = Form(""),
+    dispatch_date: str = Form(""),
+    notes: str = Form(""),
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
-    carrier: str = Query(default=""),
-    dispatch_date: str = Query(default=""),
-    notes: str = Query(default=""),
 ):
-    # --- NEW: validate Content-Type ---
-    content_type = request.headers.get("content-type", "")
-    if "xml" not in content_type:
-        raise HTTPException(
-            status_code=415, detail="Content-Type must be application/xml")
+    # --- Read uploaded file ---
+    xml_bytes = await order_xml.read()
+    if not xml_bytes:
+        raise HTTPException(status_code=400, detail="Empty uploaded file")
 
-    # --- NEW: read and parse the XML body ---
-    raw_body = await request.body()
-    if not raw_body:
-        raise HTTPException(status_code=400, detail="Request body is empty")
-
+    # --- Parse XML ---
     try:
-        order_data = parse_ubl_order(raw_body.decode("utf-8"))
+        order_data = parse_ubl_order(xml_bytes.decode("utf-8"))
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
 
+    # --- Generate ---
     try:
         xml_content = generate_despatch_advice(
-            order_data, carrier, dispatch_date, notes)
+            order_data,
+            carrier,
+            dispatch_date,
+            notes
+        )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Generation failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
+    # --- Store ---
     doc_uuid = str(uuid4())
 
     despatch = Despatch(
@@ -68,20 +69,16 @@ async def generate_despatch(
     db.add(despatch)
     db.commit()
 
-    xml_stream = io.BytesIO(xml_content.encode("utf-8"))
     filename = f"Despatch_{order_data['order_id']}_{doc_uuid}.xml"
 
     return StreamingResponse(
-        xml_stream,
+        io.BytesIO(xml_content.encode("utf-8")),
         media_type="application/xml",
         headers={
             "Content-Disposition": f'attachment; filename="{filename}"',
             "Despatch-UUID": doc_uuid,
-            "Despatch-ID": order_data["order_id"],
-        },
-        status_code=201
+        }
     )
-
 
 # Returns list of all of a user's generated XML documents
 @router.get("/list")
