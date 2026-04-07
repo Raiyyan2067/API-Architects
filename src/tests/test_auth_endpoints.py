@@ -168,3 +168,97 @@ def test_logout(client):
     res = client.post("/ubl/auth/logout")
     assert res.status_code == 200
     assert res.json() == {"message": "Logout successful"}
+
+def test_admin_list_users_includes_despatch(client):
+    seed_admin_and_user()
+
+    res = login(client, "admin", "admin123")
+    token = res.json()["access_token"]
+
+    res2 = client.get(
+        "/ubl/auth/admin/list-users",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    assert res2.status_code == 200
+
+    users = res2.json()
+    assert isinstance(users, list)
+    assert any(u["username"] == "admin" for u in users)
+
+    first_user = users[0]
+    assert "despatches" in first_user
+    assert isinstance(first_user["despatches"], list)
+
+def test_login_unknown_username(client):
+    seed_admin_and_user()
+
+    res = login(client, "ghost", "whatever")
+    assert res.status_code == 401
+    assert res.json()["detail"] == "Invalid credentials"
+
+
+def test_admin_delete_nonexistent_user(client):
+    seed_admin_and_user()
+
+    admin_login = login(client, "admin", "admin123")
+    admin_token = admin_login.json()["access_token"]
+
+    res = client.delete(
+        "/ubl/auth/admin/delete/9999",
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+    assert res.status_code == 404
+    assert res.json()["detail"] == "User not found"
+
+
+def test_admin_delete_user_forbidden_for_normal_user(client):
+    seed_admin_and_user()
+
+    user_login = login(client, "user1", "pass123")
+    user_token = user_login.json()["access_token"]
+
+    res = client.delete(
+        "/ubl/auth/admin/delete/1",
+        headers={"Authorization": f"Bearer {user_token}"}
+    )
+    assert res.status_code == 403
+    assert res.json()["detail"] == "Admin access required"
+
+
+def test_me_success_returns_id_and_username(client):
+    seed_admin_and_user()
+
+    res = login(client, "user1", "pass123")
+    token = res.json()["access_token"]
+
+    res2 = client.get(
+        "/ubl/auth/me",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+
+    assert res2.status_code == 200
+    data = res2.json()
+    assert "id" in data
+    assert data["username"] == "user1"
+
+
+def test_admin_list_users_includes_expected_fields(client):
+    seed_admin_and_user()
+
+    res = login(client, "admin", "admin123")
+    token = res.json()["access_token"]
+
+    res2 = client.get(
+        "/ubl/auth/admin/list-users",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+
+    assert res2.status_code == 200
+    users = res2.json()
+
+    first_user = users[0]
+    assert "id" in first_user
+    assert "username" in first_user
+    assert "is_admin" in first_user
+    assert "despatches" in first_user
+    assert isinstance(first_user["despatches"], list)
