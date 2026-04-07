@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.data.db import get_db
-from app.models.user_models import User, RegisterRequest, LoginRequest, TokenResponse
+from app.models.user_models import User, RegisterRequest, LoginRequest, TokenResponse, Despatch
 from app.core.auth import hash_password, verify_password, create_token, get_current_user, admin_required
 
 router = APIRouter(tags=["auth"])
@@ -37,9 +37,30 @@ def login_user(request: LoginRequest, db: Session = Depends(get_db)):
 
 # Return a list of all users
 @router.get("/admin/list-users")
-def list_all_users(db: Session = Depends(get_db), admin: User = Depends(admin_required)):
+def list_all_users(
+    db: Session = Depends(get_db),
+    admin: User = Depends(admin_required)
+):
     users = db.query(User).all()
-    return [{"id": u.id, "username": u.username, "is_admin": u.is_admin} for u in users]
+
+    result = []
+    for u in users:
+        despatches = db.query(Despatch).filter(Despatch.user_id == u.id).all()
+
+        result.append({
+            "id": u.id,
+            "username": u.username,
+            "is_admin": u.is_admin,
+            "despatches": [
+                {
+                    "uuid": d.uuid,
+                    "despatch_id": d.despatch_id
+                }
+                for d in despatches
+            ]
+        })
+
+    return result
 
 
 # Deletes a user from the database
@@ -62,3 +83,24 @@ def logout_user():
 @router.get("/me")
 def get_user(user: User = Depends(get_current_user)):
     return {"id": user.id, "username": user.username}
+
+# # Wipes all users
+# @router.delete("/admin/wipe-users")
+# def wipe_users(
+#     confirm: str,
+#     db: Session = Depends(get_db),
+#     admin: User = Depends(admin_required)
+# ):
+#     if confirm != "DELETE_ALL_USERS":
+#         raise HTTPException(
+#             status_code=400,
+#             detail="Confirmation string required: DELETE_ALL_USERS"
+#         )
+
+#     deleted = db.query(User).delete()
+#     db.commit()
+
+#     return {
+#         "message": "All users deleted",
+#         "deleted_count": deleted
+#     }
