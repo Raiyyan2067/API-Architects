@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from app.api.v1 import auth, despatch, old_despatch, health
 from mangum import Mangum
@@ -9,6 +10,18 @@ from app.core.auth import hash_password
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="UBL Despatch API", version="2.1")
+
+origins = [
+    "http://localhost:8080",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,            # Allows specific origins
+    allow_credentials=True,           # Allows cookies and auth headers
+    allow_methods=["*"],              # Allows all HTTP methods (GET, POST, etc.)
+    allow_headers=["*"],              # Allows all headers
+)
 
 @app.get("/")
 def root():

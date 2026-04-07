@@ -14,6 +14,13 @@ const loginUser = document.getElementById("login-form-username");
 const loginPass = document.getElementById("login-form-password");
 const loginSubmit = document.getElementById("login-form-submit");
 
+const genButton = document.getElementById("generate-button");
+const genForm = document.getElementById("generate-form");
+const genXML = document.getElementById("generate-form-XML");
+const genCarrier = document.getElementById("generate-form-carrier");
+const genDate = document.getElementById("generate-form-date");
+const genNotes = document.getElementById("generate-form-notes");
+
 pageTitle.addEventListener("click", () => {
     pageUpdate();
 })
@@ -43,7 +50,7 @@ registerForm.addEventListener("submit", (event) => {
             "password": registerPass.value,
         }
         apiCall("ubl/auth/register", "POST", body)
-        .then((response) => {
+        .then(() => {
             apiCall("ubl/auth/login", "POST", body)
             .then((response) => {
                 setToken(response.access_token);
@@ -76,9 +83,47 @@ loginForm.addEventListener("submit", (event) => {
     loginPass.value = "";
 })
 
+genButton.addEventListener("click", () => {
+    pageUpdate("generate-form")
+});
 
+genForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
+    if (genXML.value) {
+        // const text = await genXML.files[0].text()
+        // const body = {
+        //     "order_xml": text,
+        //     "carrier": genCarrier.value,
+        //     "dispatch_date": genDate.value,
+        //     "notes": genNotes.value
+        // }
+        // console.log(JSON.stringify(body));
+        // authApiCall("ubl/v3/despatch-advice/generate", "POST", body)
+        // .then((response) => {
+        //     console.log(response);
+        // });
 
+        // pageUpdate();
+        // genXML.value = "";
+        // genCarrier.value = "";
+        // genDate.value = "";
+        // genNotes.value = "";
+        const formData = new FormData();
+        formData.append("order_xml", genXML.files[0]);
+        formData.append("carrier", genCarrier.value);
+        formData.append("dispatch_date", genDate.value);
+        formData.append("notes", genNotes.value);
+
+        formcall("ubl/v3/despatch-advice/generate", "POST", formData)
+        .then((response) => {
+            console.log(response);
+            pageUpdate();
+        })
+    } else {
+        alert("Must upload XML file!");
+    }
+});
 
 // Display login/logout buttons
 const pageUpdate = (pageId) => {
@@ -98,7 +143,11 @@ const pageUpdate = (pageId) => {
         
     if (pageId) {
         document.getElementById(pageId).style.display = 'block';
+    } else {
+        document.getElementById("main-page").style.display = 'block';
     }
+
+    console.log(`pageUpdate(${pageId})`)
 }
 
 // Get session token
@@ -111,14 +160,6 @@ const setToken = (token) => {
     localStorage.setItem("token", token);
 }
 
-const test = document.getElementById("test-button");
-test.addEventListener("click", () => {
-    apiCall("", "GET")
-    .then((response) => {
-        console.log("test-click")
-        console.log(response)
-    });
-});
 const apiCall = (path, method, body) => {
     return fetch('http://127.0.0.1:8000/' + path, {
         method: method,
@@ -129,11 +170,29 @@ const apiCall = (path, method, body) => {
     })
     .then((response) => response.json())
     .then((data) => {
-        if (data.error) {
+        if (data && data.error) {
             alert(data.error);
         } else {
             return Promise.resolve(data);
         }
+    });
+};
+
+const formcall = (path, method, form) => {
+    return fetch("http://127.0.0.1:8000/" + path, {
+        method: method,
+        headers: {
+            "Authorization": `Bearer ${getToken()}`
+        },
+        body: form
+    })
+    //.then((response) => response.json())
+    .then((data) => {
+        //if (data && data.error) {
+        //    alert(data.error);
+        //} else {
+            return Promise.resolve(data);
+        //}
     });
 };
 
