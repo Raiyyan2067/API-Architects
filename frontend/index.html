@@ -48,9 +48,31 @@
             </div>
             <button type="submit" class="btn btn-success" id="login-form-submit">Submit</button>
         </form>
-        <button type="button" class="btn btn-danger" id="test-button">
-            test
-        </button>
+        <form class="page" id="generate-form">
+            <h2>Generate Despatch</h2>
+            <div class="mb-3">
+                <label for="generate-form-XML" class="form-label">Upload XML</label>
+                <input class="form-control" type="file" id="generate-form-XML" accept=".xml">
+            </div>
+            <div class="mb-3">
+                <label for="generate-form-carrier" class="form-label">Carrier</label>
+                <input type="text" class="form-control" id="generate-form-carrier">
+            </div>
+            <div class="mb-3">
+                <label for="generate-form-date" class="form-label">Date</label>
+                <input type="date" class="form-control" id="generate-form-date">
+            </div>
+            <div class="mb-3">
+                <label for="generate-form-notes" class="form-label">Notes</label>
+                <input type="text" class="form-control" id="generate-form-notes">
+            </div>
+            <button type="submit" class="btn btn-success" id="generate-form-submit">Submit</button>
+        </form>
+        <div class="page" id="main-page">
+            <button type="button" class="btn btn-success btn-lg" id="generate-button">
+                Generate Despatch
+            </button>
+        </div>
     </main>
     <footer>
         <p>&copy; API-Architects 2026</p>
