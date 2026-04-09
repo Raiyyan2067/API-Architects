@@ -10,7 +10,7 @@ from app.models.user_models import User, Despatch
 from app.data.db import get_db
 from app.core.auth import get_current_user
 
-router = APIRouter(tags=["Despatch Advice (v2)"])
+router = APIRouter(tags=["Despatch Advice (v3)"])
 
 
 # Generatres an XML despatch advice file from a XML Order and returns a download to the generated file
