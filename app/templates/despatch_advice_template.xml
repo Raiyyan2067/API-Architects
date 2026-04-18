@@ -3,141 +3,201 @@
     xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2"
     xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
     xmlns="urn:oasis:names:specification:ubl:schema:xsd:DespatchAdvice-2">
-    <cbc:UBLVersionID>2.0</cbc:UBLVersionID>
-    <cbc:CustomizationID>
-    urn:oasis:names:specification:ubl:xpath:DespatchAdvice-2.0:sbs-1.0-draft</cbc:CustomizationID>
-    <cbc:ProfileID>
-    bpid:urn:oasis:names:draft:bpss:ubl-2-sbs-despatch-advice-notification-draft</cbc:ProfileID>
-    <cbc:ID>{{
-    despatch_id }}</cbc:ID>
+
+    {# FIX 1: UBL version updated from 2.0 to 2.1 #}
+    <cbc:UBLVersionID>2.1</cbc:UBLVersionID>
+
+    {# FIX 1: CustomizationID and ProfileID updated to match UBL 2.1 #}
+    <cbc:CustomizationID>urn:oasis:names:specification:ubl:xpath:DespatchAdvice-2.1:sbs-1.0</cbc:CustomizationID>
+    <cbc:ProfileID>bpid:urn:oasis:names:draft:bpss:ubl-2-sbs-despatch-advice-notification</cbc:ProfileID>
+
+    <cbc:ID>{{ despatch_id }}</cbc:ID>
     <cbc:CopyIndicator>false</cbc:CopyIndicator>
     <cbc:UUID>{{ despatch_uuid }}</cbc:UUID>
-    <cbc:IssueDate>{{
-    issue_date }}</cbc:IssueDate>
+
+    {# issue_date is the dispatch date (user-provided or today) #}
+    <cbc:IssueDate>{{ issue_date }}</cbc:IssueDate>
+
     <cbc:DocumentStatusCode>NoStatus</cbc:DocumentStatusCode>
-    <cbc:DespatchAdviceTypeCode>
-    delivery</cbc:DespatchAdviceTypeCode> {% if notes %}<cbc:Note>{{ notes }}</cbc:Note>{% endif %} <cac:OrderReference>
-        <cbc:ID>{{ order_id }}</cbc:ID> {% if sales_order_id %}<cbc:SalesOrderID>{{ sales_order_id
-            }}</cbc:SalesOrderID>{% endif %} {% if order_uuid %}<cbc:UUID>{{ order_uuid }}</cbc:UUID>{%
-    endif %} <cbc:IssueDate>{{ issue_date }}</cbc:IssueDate>
+    <cbc:DespatchAdviceTypeCode>delivery</cbc:DespatchAdviceTypeCode>
+
+    {# FIX 5: Note only at document level — removed from DespatchLine loop below #}
+    {% if notes %}<cbc:Note>{{ notes }}</cbc:Note>{% endif %}
+
+    <cac:OrderReference>
+        <cbc:ID>{{ order_id }}</cbc:ID>
+        {% if sales_order_id %}<cbc:SalesOrderID>{{ sales_order_id }}</cbc:SalesOrderID>{% endif %}
+        {% if order_uuid %}<cbc:UUID>{{ order_uuid }}</cbc:UUID>{% endif %}
+        {# FIX 2: Use order_issue_date (from the original Order XML), not the dispatch date #}
+        <cbc:IssueDate>{{ order_issue_date }}</cbc:IssueDate>
     </cac:OrderReference>
 
     <cac:DespatchSupplierParty>
-    {% if seller.customer_account_id %} <cbc:CustomerAssignedAccountID>{{ seller.customer_account_id
-    }}</cbc:CustomerAssignedAccountID> {% endif %} <cac:Party>
+        {% if seller.customer_account_id %}
+        <cbc:CustomerAssignedAccountID>{{ seller.customer_account_id }}</cbc:CustomerAssignedAccountID>
+        {% endif %}
+        <cac:Party>
             <cac:PartyName>
                 <cbc:Name>{{ seller.name }}</cbc:Name>
             </cac:PartyName>
             <cac:PostalAddress>
-                <cbc:StreetName>{{ seller.street }}</cbc:StreetName> {% if seller.building_name %}<cbc:BuildingName>{{
-    seller.building_name }}</cbc:BuildingName>{% endif %} {% if seller.building_number %}<cbc:BuildingNumber>{{
-    seller.building_number }}</cbc:BuildingNumber>{% endif %} <cbc:CityName>{{ seller.city }}</cbc:CityName>
-                <cbc:PostalZone>{{
-    seller.postal_zone }}</cbc:PostalZone> {% if seller.country_subentity %}<cbc:CountrySubentity>{{
-    seller.country_subentity }}</cbc:CountrySubentity>{% endif %} {% if seller.address_line %}<cac:AddressLine>
+                <cbc:StreetName>{{ seller.street }}</cbc:StreetName>
+                {% if seller.building_name %}<cbc:BuildingName>{{ seller.building_name }}</cbc:BuildingName>{% endif %}
+                {% if seller.building_number %}<cbc:BuildingNumber>{{ seller.building_number }}</cbc:BuildingNumber>{% endif %}
+                <cbc:CityName>{{ seller.city }}</cbc:CityName>
+                <cbc:PostalZone>{{ seller.postal_zone }}</cbc:PostalZone>
+                {% if seller.country_subentity %}<cbc:CountrySubentity>{{ seller.country_subentity }}</cbc:CountrySubentity>{% endif %}
+                {% if seller.address_line %}
+                <cac:AddressLine>
                     <cbc:Line>{{ seller.address_line }}</cbc:Line>
-                </cac:AddressLine>{%
-    endif %} <cac:Country>
+                </cac:AddressLine>
+                {% endif %}
+                <cac:Country>
                     <cbc:IdentificationCode>{{ seller.country_code }}</cbc:IdentificationCode>
                 </cac:Country>
             </cac:PostalAddress>
-    {% if seller.tax_reg_name %} <cac:PartyTaxScheme>
+            {% if seller.tax_reg_name %}
+            <cac:PartyTaxScheme>
                 <cbc:RegistrationName>{{ seller.tax_reg_name }}</cbc:RegistrationName>
                 <cbc:CompanyID>{{ seller.company_id }}</cbc:CompanyID>
                 <cac:TaxScheme>
                     <cbc:ID>{{ seller.tax_scheme_id }}</cbc:ID>
                 </cac:TaxScheme>
             </cac:PartyTaxScheme>
-    {% endif %} {% if seller.contact_name %} <cac:Contact>
+            {% endif %}
+            {% if seller.contact_name %}
+            <cac:Contact>
                 <cbc:Name>{{ seller.contact_name }}</cbc:Name>
-                <cbc:Telephone>{{ seller.phone }}</cbc:Telephone>
-    {% if seller.fax %}<cbc:Telefax>{{ seller.fax }}</cbc:Telefax>{% endif %} <cbc:ElectronicMail>{{
-    seller.email }}</cbc:ElectronicMail>
-            </cac:Contact> {% endif %} </cac:Party>
+                {# FIX 4: Only emit Telephone if a value exists — no empty tags #}
+                {% if seller.phone %}<cbc:Telephone>{{ seller.phone }}</cbc:Telephone>{% endif %}
+                {% if seller.fax %}<cbc:Telefax>{{ seller.fax }}</cbc:Telefax>{% endif %}
+                {% if seller.email %}<cbc:ElectronicMail>{{ seller.email }}</cbc:ElectronicMail>{% endif %}
+            </cac:Contact>
+            {% endif %}
+        </cac:Party>
     </cac:DespatchSupplierParty>
 
     <cac:DeliveryCustomerParty>
-    {% if buyer.customer_account_id %} <cbc:CustomerAssignedAccountID>{{ buyer.customer_account_id
-            }}</cbc:CustomerAssignedAccountID> {% endif %} {% if buyer.supplier_account_id %} <cbc:SupplierAssignedAccountID>{{
-    buyer.supplier_account_id }}</cbc:SupplierAssignedAccountID> {% endif %} <cac:Party>
+        {% if buyer.customer_account_id %}
+        <cbc:CustomerAssignedAccountID>{{ buyer.customer_account_id }}</cbc:CustomerAssignedAccountID>
+        {% endif %}
+        {% if buyer.supplier_account_id %}
+        <cbc:SupplierAssignedAccountID>{{ buyer.supplier_account_id }}</cbc:SupplierAssignedAccountID>
+        {% endif %}
+        <cac:Party>
             <cac:PartyName>
                 <cbc:Name>{{ buyer.name }}</cbc:Name>
             </cac:PartyName>
             <cac:PostalAddress>
-                <cbc:StreetName>{{ buyer.street }}</cbc:StreetName> {% if buyer.building_name %}<cbc:BuildingName>{{
-    buyer.building_name }}</cbc:BuildingName>{% endif %} {% if buyer.building_number %}<cbc:BuildingNumber>{{
-    buyer.building_number }}</cbc:BuildingNumber>{% endif %} <cbc:CityName>{{ buyer.city }}</cbc:CityName>
-                <cbc:PostalZone>{{
-    buyer.postal_zone }}</cbc:PostalZone> {% if buyer.country_subentity %}<cbc:CountrySubentity>{{
-    buyer.country_subentity }}</cbc:CountrySubentity>{% endif %} {% if buyer.address_line %}<cac:AddressLine>
+                <cbc:StreetName>{{ buyer.street }}</cbc:StreetName>
+                {% if buyer.building_name %}<cbc:BuildingName>{{ buyer.building_name }}</cbc:BuildingName>{% endif %}
+                {% if buyer.building_number %}<cbc:BuildingNumber>{{ buyer.building_number }}</cbc:BuildingNumber>{% endif %}
+                <cbc:CityName>{{ buyer.city }}</cbc:CityName>
+                <cbc:PostalZone>{{ buyer.postal_zone }}</cbc:PostalZone>
+                {% if buyer.country_subentity %}<cbc:CountrySubentity>{{ buyer.country_subentity }}</cbc:CountrySubentity>{% endif %}
+                {% if buyer.address_line %}
+                <cac:AddressLine>
                     <cbc:Line>{{ buyer.address_line }}</cbc:Line>
-                </cac:AddressLine>{%
-    endif %} <cac:Country>
+                </cac:AddressLine>
+                {% endif %}
+                <cac:Country>
                     <cbc:IdentificationCode>{{ buyer.country_code }}</cbc:IdentificationCode>
                 </cac:Country>
             </cac:PostalAddress>
-    {% if buyer.tax_reg_name %} <cac:PartyTaxScheme>
+            {% if buyer.tax_reg_name %}
+            <cac:PartyTaxScheme>
                 <cbc:RegistrationName>{{ buyer.tax_reg_name }}</cbc:RegistrationName>
                 <cbc:CompanyID>{{ buyer.company_id }}</cbc:CompanyID>
                 <cac:TaxScheme>
                     <cbc:ID>{{ buyer.tax_scheme_id }}</cbc:ID>
                 </cac:TaxScheme>
             </cac:PartyTaxScheme>
-    {% endif %} {% if buyer.contact_name %} <cac:Contact>
+            {% endif %}
+            {% if buyer.contact_name %}
+            <cac:Contact>
                 <cbc:Name>{{ buyer.contact_name }}</cbc:Name>
-                <cbc:Telephone>{{ buyer.phone }}</cbc:Telephone>
-    {% if buyer.fax %}<cbc:Telefax>{{ buyer.fax }}</cbc:Telefax>{% endif %} <cbc:ElectronicMail>{{
-    buyer.email }}</cbc:ElectronicMail>
-            </cac:Contact> {% endif %} </cac:Party>
+                {# FIX 4: Only emit Telephone if a value exists — no empty tags #}
+                {% if buyer.phone %}<cbc:Telephone>{{ buyer.phone }}</cbc:Telephone>{% endif %}
+                {% if buyer.fax %}<cbc:Telefax>{{ buyer.fax }}</cbc:Telefax>{% endif %}
+                {% if buyer.email %}<cbc:ElectronicMail>{{ buyer.email }}</cbc:ElectronicMail>{% endif %}
+            </cac:Contact>
+            {% endif %}
+        </cac:Party>
     </cac:DeliveryCustomerParty>
 
     <cac:Shipment>
         <cbc:ID>1</cbc:ID>
         <cac:Consignment>
-            <cbc:ID>1</cbc:ID> {% if carrier %}<cbc:CarrierServiceInstructions>{{ carrier }}</cbc:CarrierServiceInstructions>{%
-    endif %} </cac:Consignment>
+            <cbc:ID>1</cbc:ID>
+            {# FIX 3: Carrier goes in cac:CarrierParty/cac:PartyName, not CarrierServiceInstructions #}
+            {% if carrier %}
+            <cac:CarrierParty>
+                <cac:PartyName>
+                    <cbc:Name>{{ carrier }}</cbc:Name>
+                </cac:PartyName>
+            </cac:CarrierParty>
+            {% endif %}
+        </cac:Consignment>
         <cac:Delivery>
             <cac:DeliveryAddress>
-                <cbc:StreetName>{{ delivery.street }}</cbc:StreetName> {% if delivery.building_name
-    %}<cbc:BuildingName>{{ delivery.building_name }}</cbc:BuildingName>{% endif %} {% if
-    delivery.building_number %}<cbc:BuildingNumber>{{ delivery.building_number }}</cbc:BuildingNumber>{%
-    endif %} <cbc:CityName>{{ delivery.city }}</cbc:CityName>
-                <cbc:PostalZone>{{ delivery.postal_zone
-    }}</cbc:PostalZone> {% if delivery.country_subentity %}<cbc:CountrySubentity>{{
-    delivery.country_subentity }}</cbc:CountrySubentity>{% endif %} {% if delivery.address_line %}<cac:AddressLine>
+                <cbc:StreetName>{{ delivery.street }}</cbc:StreetName>
+                {% if delivery.building_name %}<cbc:BuildingName>{{ delivery.building_name }}</cbc:BuildingName>{% endif %}
+                {% if delivery.building_number %}<cbc:BuildingNumber>{{ delivery.building_number }}</cbc:BuildingNumber>{% endif %}
+                <cbc:CityName>{{ delivery.city }}</cbc:CityName>
+                <cbc:PostalZone>{{ delivery.postal_zone }}</cbc:PostalZone>
+                {% if delivery.country_subentity %}<cbc:CountrySubentity>{{ delivery.country_subentity }}</cbc:CountrySubentity>{% endif %}
+                {% if delivery.address_line %}
+                <cac:AddressLine>
                     <cbc:Line>{{ delivery.address_line }}</cbc:Line>
-                </cac:AddressLine>{%
-    endif %} <cac:Country>
+                </cac:AddressLine>
+                {% endif %}
+                <cac:Country>
                     <cbc:IdentificationCode>{{ delivery.country_code }}</cbc:IdentificationCode>
                 </cac:Country>
             </cac:DeliveryAddress>
-    {% if delivery.start_date %} <cac:RequestedDeliveryPeriod>
-                <cbc:StartDate>{{ delivery.start_date }}</cbc:StartDate> {% if delivery.start_time
-    %}<cbc:StartTime>{{ delivery.start_time }}</cbc:StartTime>{% endif %} <cbc:EndDate>{{
-    delivery.end_date }}</cbc:EndDate> {% if delivery.end_time %}<cbc:EndTime>{{ delivery.end_time
-                    }}</cbc:EndTime>{% endif %} </cac:RequestedDeliveryPeriod> {% endif %} </cac:Delivery>
+            {% if delivery.start_date %}
+            <cac:RequestedDeliveryPeriod>
+                <cbc:StartDate>{{ delivery.start_date }}</cbc:StartDate>
+                {% if delivery.start_time %}<cbc:StartTime>{{ delivery.start_time }}</cbc:StartTime>{% endif %}
+                <cbc:EndDate>{{ delivery.end_date }}</cbc:EndDate>
+                {% if delivery.end_time %}<cbc:EndTime>{{ delivery.end_time }}</cbc:EndTime>{% endif %}
+            </cac:RequestedDeliveryPeriod>
+            {% endif %}
+        </cac:Delivery>
     </cac:Shipment>
-    {% for line in order_lines %} <cac:DespatchLine>
-        <cbc:ID>{{ line.id }}</cbc:ID> {% if notes %}<cbc:Note>{{ notes }}</cbc:Note>{% endif %} <cbc:LineStatusCode>
-    NoStatus</cbc:LineStatusCode>
-        <cbc:DeliveredQuantity unitCode="{{ line.unit_code }}">{{
-    line.quantity }}</cbc:DeliveredQuantity>
+
+    {% for line in order_lines %}
+    <cac:DespatchLine>
+        <cbc:ID>{{ line.id }}</cbc:ID>
+        {# FIX 5: No per-line note — document-level note already covers this #}
+        <cbc:LineStatusCode>NoStatus</cbc:LineStatusCode>
+        <cbc:DeliveredQuantity unitCode="{{ line.unit_code }}">{{ line.quantity }}</cbc:DeliveredQuantity>
         <cac:OrderLineReference>
-            <cbc:LineID>{{ line.id }}</cbc:LineID> {% if line.sales_order_id %}<cbc:SalesOrderLineID>{{
-    line.sales_order_id }}</cbc:SalesOrderLineID>{% endif %} <cac:OrderReference>
-                <cbc:ID>{{ order_id }}</cbc:ID> {% if sales_order_id %}<cbc:SalesOrderID>{{
-    sales_order_id }}</cbc:SalesOrderID>{% endif %} {% if order_uuid %}<cbc:UUID>{{ order_uuid }}</cbc:UUID>{%
-    endif %} <cbc:IssueDate>{{ issue_date }}</cbc:IssueDate>
+            <cbc:LineID>{{ line.id }}</cbc:LineID>
+            {% if line.sales_order_id %}<cbc:SalesOrderLineID>{{ line.sales_order_id }}</cbc:SalesOrderLineID>{% endif %}
+            <cac:OrderReference>
+                <cbc:ID>{{ order_id }}</cbc:ID>
+                {% if sales_order_id %}<cbc:SalesOrderID>{{ sales_order_id }}</cbc:SalesOrderID>{% endif %}
+                {% if order_uuid %}<cbc:UUID>{{ order_uuid }}</cbc:UUID>{% endif %}
+                {# FIX 2: order_issue_date here too — this is the original order date #}
+                <cbc:IssueDate>{{ order_issue_date }}</cbc:IssueDate>
             </cac:OrderReference>
         </cac:OrderLineReference>
         <cac:Item>
             <cbc:Description>{{ line.description }}</cbc:Description>
             <cbc:Name>{{ line.name }}</cbc:Name>
-    {% if line.buyers_id %}<cac:BuyersItemIdentification>
+            {% if line.buyers_id %}
+            <cac:BuyersItemIdentification>
                 <cbc:ID>{{ line.buyers_id }}</cbc:ID>
-            </cac:BuyersItemIdentification>{%
-    endif %} {% if line.sellers_id %}<cac:SellersItemIdentification>
+            </cac:BuyersItemIdentification>
+            {% endif %}
+            {% if line.sellers_id %}
+            <cac:SellersItemIdentification>
                 <cbc:ID>{{ line.sellers_id }}</cbc:ID>
-            </cac:SellersItemIdentification>{%
-    endif %} </cac:Item>
-    </cac:DespatchLine> {% endfor %} </DespatchAdvice>
+            </cac:SellersItemIdentification>
+            {% endif %}
+        </cac:Item>
+    </cac:DespatchLine>
+    {% endfor %}
+
+</DespatchAdvice>

@@ -38,13 +38,17 @@ def generate_despatch_advice(order_data: dict, carrier: str = "", dispatch_date:
     despatch_uuid = str(uuid.uuid4()).upper()
 
     # Merge generated fields into the data dict for the template
+    # order_issue_date = the date from the original Order XML (not the dispatch date)
+    # issue_date       = the dispatch date (today or user-provided)
     context = {
         **order_data,
-        "despatch_id":   despatch_id,
-        "despatch_uuid": despatch_uuid,
-        "issue_date":    today,
-        "carrier":       carrier,
-        "notes":         notes,
+        "despatch_id":      despatch_id,
+        "despatch_uuid":    despatch_uuid,
+        "issue_date":       today,
+        "order_issue_date": order_data.get("order_issue_date", ""),
+        "currency_code":    order_data.get("currency_code", ""),
+        "carrier":          carrier,
+        "notes":            notes,
     }
 
     # Load template and render XML

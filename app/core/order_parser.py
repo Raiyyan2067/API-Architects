@@ -50,11 +50,13 @@ def parse_ubl_order(xml_string: str) -> dict:
 
     # ── Order header ──────────────────────────────────────────────
     data = {
-        "order_id":        _text(root, "cbc:ID"),
-        "sales_order_id":  _text(root, "cbc:SalesOrderID"),
-        "order_uuid":      _text(root, "cbc:UUID"),
-        "issue_date":      _text(root, "cbc:IssueDate"),
-        "order_note":      _text(root, "cbc:Note"),
+        "order_id":         _text(root, "cbc:ID"),
+        "sales_order_id":   _text(root, "cbc:SalesOrderID"),
+        "order_uuid":       _text(root, "cbc:UUID"),
+        "order_issue_date": _text(root, "cbc:IssueDate"),
+        "issue_date":       _text(root, "cbc:IssueDate"),
+        "order_note":       _text(root, "cbc:Note"),
+        "currency_code":    _text(root, "cbc:DocumentCurrencyCode"),
     }
 
     if not data["order_id"]:
