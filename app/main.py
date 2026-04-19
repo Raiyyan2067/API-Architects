@@ -13,19 +13,23 @@ app = FastAPI(title="UBL Despatch API", version="2.1")
 
 origins = [
     "http://localhost:8080",
+    "http://localhost:8081"
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,            # Allows specific origins
     allow_credentials=True,           # Allows cookies and auth headers
-    allow_methods=["*"],              # Allows all HTTP methods (GET, POST, etc.)
+    # Allows all HTTP methods (GET, POST, etc.)
+    allow_methods=["*"],
     allow_headers=["*"],              # Allows all headers
 )
+
 
 @app.get("/")
 def root():
     return {"message": "UBL API is running"}
+
 
 app.include_router(auth.router, prefix="/ubl/auth")
 app.include_router(despatch.router, prefix="/ubl/v3/despatch-advice")
@@ -33,6 +37,8 @@ app.include_router(old_despatch.router, prefix="/ubl/v2/despatch-advice")
 app.include_router(health.router, prefix="/ubl/v2/despatch-advice")
 
 # --- Startup event to create admin ---
+
+
 @app.on_event("startup")
 def create_admin_user():
     db: Session = next(get_db())
@@ -48,5 +54,6 @@ def create_admin_user():
         print("Admin user 'admin' created successfully!")
     else:
         print("Admin user already exists.")
+
 
 handler = Mangum(app)
