@@ -28,20 +28,51 @@ def validate_xml_against_xsd(xml_content: str):
         raise ValueError(f"UBL validation error: {e}")
 
 
-def generate_despatch_advice(order_data: dict, carrier: str = "", dispatch_date: str = "", notes: str = "") -> str:
+def generate_despatch_advice(
+    order_data: dict,
+    carrier: str = "",
+    dispatch_date: str = "",
+    notes: str = "",
+    partial_lines: dict = None,   # optional: {line_id: dispatched_qty}
+) -> str:
     """
     Generate a UBL Despatch Advice XML from order_data dict
     (produced by order_parser.parse_ubl_order).
+
+    partial_lines: dict keyed by line id → dispatched quantity (float/str).
+    If a line id is not in partial_lines, its full ordered quantity is used.
+    Backorder quantity is auto-calculated when dispatched < ordered.
     """
     today = dispatch_date if dispatch_date else str(date.today())
     despatch_id = str(uuid.uuid4().int)[:6]
     despatch_uuid = str(uuid.uuid4()).upper()
+
+    # Apply partial quantities to order lines
+    enriched_lines = []
+    for line in order_data.get("order_lines", []):
+        ordered_qty = float(line["quantity"]) if line["quantity"] else 0.0
+        if partial_lines and line["id"] in partial_lines:
+            dispatched_qty = float(partial_lines[line["id"]])
+            # Guard: dispatched cannot exceed ordered
+            dispatched_qty = min(dispatched_qty, ordered_qty)
+            dispatched_qty = max(dispatched_qty, 0.0)
+        else:
+            dispatched_qty = ordered_qty
+
+        backorder_qty = ordered_qty - dispatched_qty
+
+        enriched_lines.append({
+            **line,
+            "delivered_qty":  int(dispatched_qty) if dispatched_qty == int(dispatched_qty) else dispatched_qty,
+            "backorder_qty":  int(backorder_qty)  if backorder_qty  == int(backorder_qty)  else backorder_qty,
+        })
 
     # Merge generated fields into the data dict for the template
     # order_issue_date = the date from the original Order XML (not the dispatch date)
     # issue_date       = the dispatch date (today or user-provided)
     context = {
         **order_data,
+        "order_lines":      enriched_lines,
         "despatch_id":      despatch_id,
         "despatch_uuid":    despatch_uuid,
         "issue_date":       today,
