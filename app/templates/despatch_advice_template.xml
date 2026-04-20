@@ -21,7 +21,7 @@
     <cbc:DocumentStatusCode>NoStatus</cbc:DocumentStatusCode>
     <cbc:DespatchAdviceTypeCode>delivery</cbc:DespatchAdviceTypeCode>
 
-    {# FIX 5: Note only at document level — removed from DespatchLine loop below #}
+    {# FIX 5: Note only at document level - removed from DespatchLine loop below #}
     {% if notes %}<cbc:Note>{{ notes }}</cbc:Note>{% endif %}
 
     <cac:OrderReference>
@@ -68,7 +68,7 @@
             {% if seller.contact_name %}
             <cac:Contact>
                 <cbc:Name>{{ seller.contact_name }}</cbc:Name>
-                {# FIX 4: Only emit Telephone if a value exists — no empty tags #}
+                {# FIX 4: Only emit Telephone if a value exists - no empty tags #}
                 {% if seller.phone %}<cbc:Telephone>{{ seller.phone }}</cbc:Telephone>{% endif %}
                 {% if seller.fax %}<cbc:Telefax>{{ seller.fax }}</cbc:Telefax>{% endif %}
                 {% if seller.email %}<cbc:ElectronicMail>{{ seller.email }}</cbc:ElectronicMail>{% endif %}
@@ -116,7 +116,7 @@
             {% if buyer.contact_name %}
             <cac:Contact>
                 <cbc:Name>{{ buyer.contact_name }}</cbc:Name>
-                {# FIX 4: Only emit Telephone if a value exists — no empty tags #}
+                {# FIX 4: Only emit Telephone if a value exists - no empty tags #}
                 {% if buyer.phone %}<cbc:Telephone>{{ buyer.phone }}</cbc:Telephone>{% endif %}
                 {% if buyer.fax %}<cbc:Telefax>{{ buyer.fax }}</cbc:Telefax>{% endif %}
                 {% if buyer.email %}<cbc:ElectronicMail>{{ buyer.email }}</cbc:ElectronicMail>{% endif %}
@@ -169,9 +169,13 @@
     {% for line in order_lines %}
     <cac:DespatchLine>
         <cbc:ID>{{ line.id }}</cbc:ID>
-        {# FIX 5: No per-line note — document-level note already covers this #}
+        {# FIX 5: No per-line note - document-level note already covers this #}
         <cbc:LineStatusCode>NoStatus</cbc:LineStatusCode>
-        <cbc:DeliveredQuantity unitCode="{{ line.unit_code }}">{{ line.quantity }}</cbc:DeliveredQuantity>
+        <cbc:DeliveredQuantity unitCode="{{ line.unit_code }}">{{ line.delivered_qty }}</cbc:DeliveredQuantity>
+        {% if line.backorder_qty and line.backorder_qty > 0 %}
+        <cbc:BackorderQuantity unitCode="{{ line.unit_code }}">{{ line.backorder_qty }}</cbc:BackorderQuantity>
+        <cbc:BackorderReason>Partial shipment</cbc:BackorderReason>
+        {% endif %}
         <cac:OrderLineReference>
             <cbc:LineID>{{ line.id }}</cbc:LineID>
             {% if line.sales_order_id %}<cbc:SalesOrderLineID>{{ line.sales_order_id }}</cbc:SalesOrderLineID>{% endif %}
@@ -179,7 +183,7 @@
                 <cbc:ID>{{ order_id }}</cbc:ID>
                 {% if sales_order_id %}<cbc:SalesOrderID>{{ sales_order_id }}</cbc:SalesOrderID>{% endif %}
                 {% if order_uuid %}<cbc:UUID>{{ order_uuid }}</cbc:UUID>{% endif %}
-                {# FIX 2: order_issue_date here too — this is the original order date #}
+                {# FIX 2: order_issue_date here too - this is the original order date #}
                 <cbc:IssueDate>{{ order_issue_date }}</cbc:IssueDate>
             </cac:OrderReference>
         </cac:OrderLineReference>

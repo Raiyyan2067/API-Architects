@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-//  DespatchFlow — Main JS
+//  DespatchFlow - Main JS
 //
 //  MOCK_MODE = true  → works without a backend (fake data)
 //  MOCK_MODE = false → talks to real FastAPI backend
@@ -14,272 +14,359 @@ const MOCK_MODE = false;
 // Use 'http://localhost:8000' when running backend locally with python run.py
 // Use the AWS URL below when the deployment is fixed
 // const API_BASE = 'https://rhumzuhvabxxwsemnufzash5ue0wubck.lambda-url.ap-southeast-2.on.aws';
-const API_BASE  = 'http://localhost:8000';
+const API_BASE = "http://localhost:8000";
 
 // ─── Token management ────────────────────────────────────────
-const getToken    = ()  => localStorage.getItem('df_token');
-const getUsername = ()  => localStorage.getItem('df_username');
+const getToken = () => localStorage.getItem("df_token");
+const getUsername = () => localStorage.getItem("df_username");
 const saveSession = (token, username) => {
-    localStorage.setItem('df_token', token);
-    localStorage.setItem('df_username', username);
+  localStorage.setItem("df_token", token);
+  localStorage.setItem("df_username", username);
 };
 const clearSession = () => {
-    localStorage.removeItem('df_token');
-    localStorage.removeItem('df_username');
+  localStorage.removeItem("df_token");
+  localStorage.removeItem("df_username");
 };
 
 // ─── API helpers ─────────────────────────────────────────────
 
-// JSON call — used for auth endpoints (register, login, logout)
-const apiCall = async (path, method = 'GET', body = null) => {
-    const headers = { 'Content-Type': 'application/json' };
-    if (getToken()) headers['Authorization'] = `Bearer ${getToken()}`;
+// JSON call - used for auth endpoints (register, login, logout)
+const apiCall = async (path, method = "GET", body = null) => {
+  const headers = { "Content-Type": "application/json" };
+  if (getToken()) headers["Authorization"] = `Bearer ${getToken()}`;
 
-    const opts = { method, headers };
-    if (body) opts.body = JSON.stringify(body);
+  const opts = { method, headers };
+  if (body) opts.body = JSON.stringify(body);
 
-    const res = await fetch(`${API_BASE}/${path}`, opts);
-    const data = await res.json().catch(() => ({}));
+  const res = await fetch(`${API_BASE}/${path}`, opts);
+  const data = await res.json().catch(() => ({}));
 
-    if (!res.ok) throw new Error(data.detail || `Error ${res.status}`);
-    return data;
+  if (!res.ok) throw new Error(data.detail || `Error ${res.status}`);
+  return data;
 };
 
-// Multipart/form-data call — used for file uploads (generate)
+// Multipart/form-data call - used for file uploads (generate)
 // Do NOT set Content-Type manually; browser sets it with the boundary
 const formCall = async (path, formData) => {
-    const res = await fetch(`${API_BASE}/${path}`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${getToken()}` },
-        body: formData
-    });
+  const res = await fetch(`${API_BASE}/${path}`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${getToken()}` },
+    body: formData,
+  });
 
-    if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        // 401 means token expired or missing
-        if (res.status === 401) {
-            clearSession();
-            updateAuthUI();
-            showToast('Session expired — please log in again', 'error');
-        }
-        throw new Error(err.detail || `Error ${res.status}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    // 401 means token expired or missing
+    if (res.status === 401) {
+      clearSession();
+      updateAuthUI();
+      showToast("Session expired - please log in again", "error");
     }
-    return res; // caller handles blob download
+    throw new Error(err.detail || `Error ${res.status}`);
+  }
+  return res; // caller handles blob download
 };
 
-// Authenticated JSON GET — used for list, delete etc.
-const authCall = async (path, method = 'GET') => {
-    if (!getToken()) throw new Error('Not logged in');
-    const res = await fetch(`${API_BASE}/${path}`, {
-        method,
-        headers: { 'Authorization': `Bearer ${getToken()}` }
-    });
-    const data = await res.json().catch(() => ({}));
+// Authenticated JSON GET - used for list, delete etc.
+const authCall = async (path, method = "GET") => {
+  if (!getToken()) throw new Error("Not logged in");
+  const res = await fetch(`${API_BASE}/${path}`, {
+    method,
+    headers: { Authorization: `Bearer ${getToken()}` },
+  });
+  const data = await res.json().catch(() => ({}));
 
-    if (res.status === 401) {
-        clearSession();
-        updateAuthUI();
-        showToast('Session expired — please log in again', 'error');
-    }
-    if (!res.ok) throw new Error(data.detail || `Error ${res.status}`);
-    return data;
+  if (res.status === 401) {
+    clearSession();
+    updateAuthUI();
+    showToast("Session expired - please log in again", "error");
+  }
+  if (!res.ok) throw new Error(data.detail || `Error ${res.status}`);
+  return data;
 };
 
 // ─── Mock data (used when MOCK_MODE = true) ──────────────────
 const mockStore = {
-    token: null, username: null,
-    documents: [
-        { uuid: 'b0e63b53-f9bd-49fa-8983-f30c178b3e95', despatch_id: 'ORD-001', created_at: '2026-04-10T10:00:00' },
-        { uuid: 'c1f74c64-a0ce-4a3d-9174-003c178b4ea6', despatch_id: 'ORD-002', created_at: '2026-04-12T14:30:00' },
-        { uuid: 'd2a85d75-b1df-4b4e-a285-114d289c5fb7', despatch_id: 'ORD-003', created_at: '2026-04-14T09:15:00' },
-        { uuid: 'e3b96e86-c2e0-5c5f-b396-225e39ad60c8', despatch_id: 'ORD-004', created_at: '2026-04-16T11:45:00' },
-    ],
+  token: null,
+  username: null,
+  documents: [
+    {
+      uuid: "b0e63b53-f9bd-49fa-8983-f30c178b3e95",
+      despatch_id: "ORD-001",
+      created_at: "2026-04-10T10:00:00",
+    },
+    {
+      uuid: "c1f74c64-a0ce-4a3d-9174-003c178b4ea6",
+      despatch_id: "ORD-002",
+      created_at: "2026-04-12T14:30:00",
+    },
+    {
+      uuid: "d2a85d75-b1df-4b4e-a285-114d289c5fb7",
+      despatch_id: "ORD-003",
+      created_at: "2026-04-14T09:15:00",
+    },
+    {
+      uuid: "e3b96e86-c2e0-5c5f-b396-225e39ad60c8",
+      despatch_id: "ORD-004",
+      created_at: "2026-04-16T11:45:00",
+    },
+  ],
 };
-const mockDelay = (ms = 700) => new Promise(r => setTimeout(r, ms));
+const mockDelay = (ms = 700) => new Promise((r) => setTimeout(r, ms));
 const MOCK_XML = (orderId, carrier, date, notes) =>
-`<?xml version="1.0" encoding="UTF-8"?>
+  `<?xml version="1.0" encoding="UTF-8"?>
 <DespatchAdvice
   xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2"
   xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
   xmlns="urn:oasis:names:specification:ubl:schema:xsd:DespatchAdvice-2">
   <cbc:UBLVersionID>2.1</cbc:UBLVersionID>
   <cbc:ID>${orderId}</cbc:ID>
-  <cbc:IssueDate>${date || new Date().toISOString().split('T')[0]}</cbc:IssueDate>
+  <cbc:IssueDate>${date || new Date().toISOString().split("T")[0]}</cbc:IssueDate>
   <cbc:DespatchAdviceTypeCode>delivery</cbc:DespatchAdviceTypeCode>
-  <cbc:Note>${notes || 'Generated by DespatchFlow'}</cbc:Note>
-  <!-- Carrier: ${carrier || 'Not specified'} -->
+  <cbc:Note>${notes || "Generated by DespatchFlow"}</cbc:Note>
+  <!-- Carrier: ${carrier || "Not specified"} -->
 </DespatchAdvice>`;
 
 // ═══════════════════════════════════════════════════════════
 //  Navigation
 // ═══════════════════════════════════════════════════════════
 const pages = {
-    dashboard: 'Dashboard',
-    generate:  'Generate Despatch',
-    documents: 'My Documents',
-    validate:  'Validate XML',
+  dashboard: "Dashboard",
+  generate: "Generate Despatch",
+  documents: "My Documents",
+  validate: "Validate XML",
 };
 
 const navigateTo = (pageId) => {
-    if (!pages[pageId]) return;
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.getElementById(`page-${pageId}`).classList.add('active');
-    document.querySelector(`.nav-item[data-page="${pageId}"]`)?.classList.add('active');
-    document.getElementById('page-heading').textContent = pages[pageId];
-    if (pageId === 'documents') loadDocuments();
-    if (pageId === 'dashboard')  loadDashboard();
+  if (!pages[pageId]) return;
+  document
+    .querySelectorAll(".page")
+    .forEach((p) => p.classList.remove("active"));
+  document
+    .querySelectorAll(".nav-item")
+    .forEach((n) => n.classList.remove("active"));
+  document.getElementById(`page-${pageId}`).classList.add("active");
+  document
+    .querySelector(`.nav-item[data-page="${pageId}"]`)
+    ?.classList.add("active");
+  document.getElementById("page-heading").textContent = pages[pageId];
+  if (pageId === "documents") loadDocuments();
+  if (pageId === "dashboard") loadDashboard();
 };
 
-document.addEventListener('click', (e) => {
-    const el = e.target.closest('[data-page]');
-    if (el) { e.preventDefault(); navigateTo(el.dataset.page); }
+document.addEventListener("click", (e) => {
+  const el = e.target.closest("[data-page]");
+  if (el) {
+    e.preventDefault();
+    navigateTo(el.dataset.page);
+  }
 });
 
 // ═══════════════════════════════════════════════════════════
 //  Auth UI
 // ═══════════════════════════════════════════════════════════
 const updateAuthUI = () => {
-    const loggedIn = MOCK_MODE ? !!mockStore.token : !!getToken();
-    const username = MOCK_MODE ? mockStore.username : getUsername();
+  const loggedIn = MOCK_MODE ? !!mockStore.token : !!getToken();
+  const username = MOCK_MODE ? mockStore.username : getUsername();
 
-    document.getElementById('auth-buttons').style.display  = loggedIn ? 'none' : 'flex';
-    document.getElementById('logout-btn').style.display    = loggedIn ? 'flex' : 'none';
-    document.getElementById('user-avatar').textContent     = loggedIn ? (username?.[0]?.toUpperCase() || 'U') : '?';
-    document.getElementById('user-name-display').textContent = loggedIn ? username : 'Guest';
-    document.getElementById('mock-badge').style.display    = MOCK_MODE ? 'flex' : 'none';
+  document.getElementById("auth-buttons").style.display = loggedIn
+    ? "none"
+    : "flex";
+  document.getElementById("logout-btn").style.display = loggedIn
+    ? "flex"
+    : "none";
+  document.getElementById("user-avatar").textContent = loggedIn
+    ? username?.[0]?.toUpperCase() || "U"
+    : "?";
+  document.getElementById("user-name-display").textContent = loggedIn
+    ? username
+    : "Guest";
+  document.getElementById("mock-badge").style.display = MOCK_MODE
+    ? "flex"
+    : "none";
 };
 
 // ─── Modal helpers ───────────────────────────────────────────
 const openModal = (id) => {
-    document.getElementById('modal-overlay').style.display = 'flex';
-    document.getElementById('login-modal').style.display    = id === 'login-modal'    ? 'block' : 'none';
-    document.getElementById('register-modal').style.display = id === 'register-modal' ? 'block' : 'none';
+  document.getElementById("modal-overlay").style.display = "flex";
+  document.getElementById("login-modal").style.display =
+    id === "login-modal" ? "block" : "none";
+  document.getElementById("register-modal").style.display =
+    id === "register-modal" ? "block" : "none";
 };
 const closeModal = () => {
-    document.getElementById('modal-overlay').style.display = 'none';
-    document.getElementById('login-error').textContent    = '';
-    document.getElementById('register-error').textContent = '';
+  document.getElementById("modal-overlay").style.display = "none";
+  document.getElementById("login-error").textContent = "";
+  document.getElementById("register-error").textContent = "";
 };
 
-document.getElementById('login-nav-btn').addEventListener('click',    () => openModal('login-modal'));
-document.getElementById('register-nav-btn').addEventListener('click', () => openModal('register-modal'));
-document.querySelectorAll('[data-close-modal]').forEach(b => b.addEventListener('click', closeModal));
-document.getElementById('modal-overlay').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeModal(); });
-document.getElementById('switch-to-register').addEventListener('click', (e) => { e.preventDefault(); openModal('register-modal'); });
-document.getElementById('switch-to-login').addEventListener('click',    (e) => { e.preventDefault(); openModal('login-modal'); });
+document
+  .getElementById("login-nav-btn")
+  .addEventListener("click", () => openModal("login-modal"));
+document
+  .getElementById("register-nav-btn")
+  .addEventListener("click", () => openModal("register-modal"));
+document
+  .querySelectorAll("[data-close-modal]")
+  .forEach((b) => b.addEventListener("click", closeModal));
+document.getElementById("modal-overlay").addEventListener("click", (e) => {
+  if (e.target === e.currentTarget) closeModal();
+});
+document.getElementById("switch-to-register").addEventListener("click", (e) => {
+  e.preventDefault();
+  openModal("register-modal");
+});
+document.getElementById("switch-to-login").addEventListener("click", (e) => {
+  e.preventDefault();
+  openModal("login-modal");
+});
 
 // ─── Login ───────────────────────────────────────────────────
 // Flow: POST /ubl/auth/login with JSON → get access_token → save it
-document.getElementById('login-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const errEl    = document.getElementById('login-error');
-    const username = document.getElementById('login-username').value.trim();
-    const password = document.getElementById('login-password').value;
-    errEl.textContent = '';
+document.getElementById("login-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const errEl = document.getElementById("login-error");
+  const username = document.getElementById("login-username").value.trim();
+  const password = document.getElementById("login-password").value;
+  errEl.textContent = "";
 
-    if (!username || !password) { errEl.textContent = 'Both fields are required'; return; }
+  if (!username || !password) {
+    errEl.textContent = "Both fields are required";
+    return;
+  }
 
-    setLoading('login-form', true);
-    try {
-        if (MOCK_MODE) {
-            await mockDelay();
-            mockStore.token = 'mock_token'; mockStore.username = username;
-        } else {
-            // POST JSON — returns { access_token, token_type }
-            const res = await apiCall('ubl/auth/login', 'POST', { username, password });
-            saveSession(res.access_token, username);
-        }
-        closeModal();
-        updateAuthUI();
-        showToast(`Welcome back, ${username}!`, 'success');
-        loadDashboard();
-    } catch (err) {
-        errEl.textContent = err.message;
-    } finally {
-        setLoading('login-form', false);
+  setLoading("login-form", true);
+  try {
+    if (MOCK_MODE) {
+      await mockDelay();
+      mockStore.token = "mock_token";
+      mockStore.username = username;
+    } else {
+      // POST JSON - returns { access_token, token_type }
+      const res = await apiCall("ubl/auth/login", "POST", {
+        username,
+        password,
+      });
+      saveSession(res.access_token, username);
     }
+    closeModal();
+    updateAuthUI();
+    showToast(`Welcome back, ${username}!`, "success");
+    loadDashboard();
+  } catch (err) {
+    errEl.textContent = err.message;
+  } finally {
+    setLoading("login-form", false);
+  }
 });
 
 // ─── Register ────────────────────────────────────────────────
 // Flow: POST /ubl/auth/register → {message} (no token)
 //       then POST /ubl/auth/login to get the token
-document.getElementById('register-form').addEventListener('submit', async (e) => {
+document
+  .getElementById("register-form")
+  .addEventListener("submit", async (e) => {
     e.preventDefault();
-    const errEl    = document.getElementById('register-error');
-    const username = document.getElementById('reg-username').value.trim();
-    const password = document.getElementById('reg-password').value;
-    const confirm  = document.getElementById('reg-confirm').value;
-    errEl.textContent = '';
+    const errEl = document.getElementById("register-error");
+    const username = document.getElementById("reg-username").value.trim();
+    const password = document.getElementById("reg-password").value;
+    const confirm = document.getElementById("reg-confirm").value;
+    errEl.textContent = "";
 
-    if (!username || !password)     { errEl.textContent = 'All fields are required'; return; }
-    if (password !== confirm)        { errEl.textContent = 'Passwords do not match'; return; }
-    if (password.length < 4)         { errEl.textContent = 'Password must be at least 4 characters'; return; }
-
-    setLoading('register-form', true);
-    try {
-        if (MOCK_MODE) {
-            await mockDelay(500);
-            mockStore.token = 'mock_token'; mockStore.username = username;
-        } else {
-            // Step 1: register (returns {message}, NOT a token)
-            await apiCall('ubl/auth/register', 'POST', { username, password });
-            // Step 2: login to get the token
-            const res = await apiCall('ubl/auth/login', 'POST', { username, password });
-            saveSession(res.access_token, username);
-        }
-        closeModal();
-        updateAuthUI();
-        showToast(`Account created! Welcome, ${username}`, 'success');
-        loadDashboard();
-    } catch (err) {
-        errEl.textContent = err.message;
-    } finally {
-        setLoading('register-form', false);
+    if (!username || !password) {
+      errEl.textContent = "All fields are required";
+      return;
     }
-});
+    if (password !== confirm) {
+      errEl.textContent = "Passwords do not match";
+      return;
+    }
+    if (password.length < 4) {
+      errEl.textContent = "Password must be at least 4 characters";
+      return;
+    }
+
+    setLoading("register-form", true);
+    try {
+      if (MOCK_MODE) {
+        await mockDelay(500);
+        mockStore.token = "mock_token";
+        mockStore.username = username;
+      } else {
+        // Step 1: register (returns {message}, NOT a token)
+        await apiCall("ubl/auth/register", "POST", { username, password });
+        // Step 2: login to get the token
+        const res = await apiCall("ubl/auth/login", "POST", {
+          username,
+          password,
+        });
+        saveSession(res.access_token, username);
+      }
+      closeModal();
+      updateAuthUI();
+      showToast(`Account created! Welcome, ${username}`, "success");
+      loadDashboard();
+    } catch (err) {
+      errEl.textContent = err.message;
+    } finally {
+      setLoading("register-form", false);
+    }
+  });
 
 // ─── Logout ──────────────────────────────────────────────────
 // Backend logout is stateless (just returns {message}), so we only need to clear local token
-document.getElementById('logout-btn').addEventListener('click', async () => {
-    if (!MOCK_MODE) {
-        try { await apiCall('ubl/auth/logout', 'POST'); } catch(_) { /* ignore */ }
+document.getElementById("logout-btn").addEventListener("click", async () => {
+  if (!MOCK_MODE) {
+    try {
+      await apiCall("ubl/auth/logout", "POST");
+    } catch (_) {
+      /* ignore */
     }
-    MOCK_MODE ? (mockStore.token = null, mockStore.username = null) : clearSession();
-    updateAuthUI();
-    showToast('Logged out');
-    navigateTo('dashboard');
+  }
+  MOCK_MODE
+    ? ((mockStore.token = null), (mockStore.username = null))
+    : clearSession();
+  updateAuthUI();
+  showToast("Logged out");
+  navigateTo("dashboard");
 });
 
 // ═══════════════════════════════════════════════════════════
 //  Dashboard
 // ═══════════════════════════════════════════════════════════
 const loadDashboard = async () => {
-    if (!(MOCK_MODE ? mockStore.token : getToken())) {
-        // Not logged in — show empty state
-        document.getElementById('recent-doc-list').innerHTML =
-            '<p style="color:var(--text-3);font-size:13px;padding:8px 0">Log in to see your documents.</p>';
-        document.getElementById('stat-total').textContent = '—';
-        document.getElementById('stat-recent').textContent = '—';
-        return;
+  if (!(MOCK_MODE ? mockStore.token : getToken())) {
+    // Not logged in - show empty state
+    document.getElementById("recent-doc-list").innerHTML =
+      '<p style="color:var(--text-3);font-size:13px;padding:8px 0">Log in to see your documents.</p>';
+    document.getElementById("stat-total").textContent = "-";
+    document.getElementById("stat-recent").textContent = "-";
+    return;
+  }
+
+  try {
+    const docs = MOCK_MODE
+      ? await mockDelay(300).then(() => mockStore.documents)
+      : await authCall("ubl/v3/despatch-advice/list");
+
+    document.getElementById("stat-total").textContent = docs.length;
+    // "this week" = docs created in last 7 days
+    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const recent = docs.filter(
+      (d) => d.created_at && new Date(d.created_at) > weekAgo,
+    );
+    document.getElementById("stat-recent").textContent = recent.length;
+
+    const list = document.getElementById("recent-doc-list");
+    if (!docs.length) {
+      list.innerHTML =
+        '<p style="color:var(--text-3);font-size:13px;padding:8px 0">No documents yet.</p>';
+      return;
     }
-
-    try {
-        const docs = MOCK_MODE ? await mockDelay(300).then(() => mockStore.documents) 
-                               : await authCall('ubl/v3/despatch-advice/list');
-
-        document.getElementById('stat-total').textContent = docs.length;
-        // "this week" = docs created in last 7 days
-        const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-        const recent  = docs.filter(d => d.created_at && new Date(d.created_at) > weekAgo);
-        document.getElementById('stat-recent').textContent = recent.length;
-
-        const list = document.getElementById('recent-doc-list');
-        if (!docs.length) {
-            list.innerHTML = '<p style="color:var(--text-3);font-size:13px;padding:8px 0">No documents yet.</p>';
-            return;
-        }
-        list.innerHTML = docs.slice(0, 5).map(d => `
+    list.innerHTML = docs
+      .slice(0, 5)
+      .map(
+        (d) => `
             <div class="doc-row">
                 <div class="doc-row-left">
                     <div class="doc-row-icon">
@@ -294,137 +381,382 @@ const loadDashboard = async () => {
                     </div>
                 </div>
                 <div class="doc-row-date">${formatDate(d.created_at)}</div>
-            </div>`).join('');
-    } catch (err) {
-        document.getElementById('recent-doc-list').innerHTML =
-            `<p style="color:var(--red);font-size:13px">${err.message}</p>`;
-    }
+            </div>`,
+      )
+      .join("");
+  } catch (err) {
+    document.getElementById("recent-doc-list").innerHTML =
+      `<p style="color:var(--red);font-size:13px">${err.message}</p>`;
+  }
 };
 
 // ═══════════════════════════════════════════════════════════
 //  Generate Despatch
 // ═══════════════════════════════════════════════════════════
-let selectedFile     = null;
+let selectedFile = null;
 let generatedXmlData = null;
+let editModeId = null; // set when editing an existing despatch; null when creating new
 
 setupDropZone(
-    'drop-zone', 'drop-zone-inner', 'drop-zone-file',
-    'file-name-display', 'remove-file', 'xml-file-input',
-    'browse-link',
-    (f) => { selectedFile = f; }
+  "drop-zone",
+  "drop-zone-inner",
+  "drop-zone-file",
+  "file-name-display",
+  "remove-file",
+  "xml-file-input",
+  "browse-link",
+  (f) => {
+    selectedFile = f;
+    if (f) parseOrderXmlForLines(f);
+    else clearLineInputs();
+  },
 );
 
-document.getElementById('generate-form').addEventListener('submit', async (e) => {
+// Parse uploaded Order XML client-side and render per-line quantity inputs
+async function parseOrderXmlForLines(file) {
+  try {
+    const text = await file.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(text, "application/xml");
+    const ns = {
+      cbc: "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
+      cac: "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
+    };
+    const getText = (node, tag, nsUri) => {
+      const els = node.getElementsByTagNameNS(nsUri, tag);
+      return els.length ? (els[0].textContent || "").trim() : "";
+    };
+
+    const orderLines = doc.getElementsByTagNameNS(ns.cac, "OrderLine");
+    if (!orderLines.length) {
+      clearLineInputs();
+      return;
+    }
+
+    const lines = [];
+    for (const ol of orderLines) {
+      const li = ol.getElementsByTagNameNS(ns.cac, "LineItem")[0];
+      if (!li) continue;
+      const qtyEl = li.getElementsByTagNameNS(ns.cbc, "Quantity")[0];
+      const id = getText(li, "ID", ns.cbc);
+      const name =
+        getText(
+          li.getElementsByTagNameNS(ns.cac, "Item")[0] || li,
+          "Name",
+          ns.cbc,
+        ) ||
+        getText(
+          li.getElementsByTagNameNS(ns.cac, "Item")[0] || li,
+          "Description",
+          ns.cbc,
+        ) ||
+        `Line ${id}`;
+      const qty = qtyEl ? (qtyEl.textContent || "0").trim() : "0";
+      const unit = qtyEl ? qtyEl.getAttribute("unitCode") || "EA" : "EA";
+      lines.push({ id, name, qty: parseFloat(qty), unit });
+    }
+
+    renderLineInputs(lines);
+  } catch (_) {
+    clearLineInputs();
+  }
+}
+
+function renderLineInputs(lines) {
+  const container = document.getElementById("partial-lines-container");
+  if (!container) return;
+  if (!lines.length) {
+    container.style.display = "none";
+    return;
+  }
+
+  container.style.display = "block";
+  container.innerHTML = `
+        <div class="form-group">
+            <label class="form-label">Line Items - Dispatch Quantities</label>
+            <p style="font-size:12px;color:var(--text-3);margin-bottom:10px">
+                Adjust quantities below to create a partial shipment. Leave at full quantity to dispatch all.
+            </p>
+            <div class="line-items-table">
+                ${lines
+                  .map(
+                    (l) => `
+                <div class="line-item-row" data-line-id="${l.id}">
+                    <div class="line-item-info">
+                        <span class="line-item-name">${l.name}</span>
+                        <span class="line-item-unit" style="color:var(--text-3);font-size:11px">${l.unit}</span>
+                    </div>
+                    <div class="line-item-qty">
+                        <span style="color:var(--text-3);font-size:12px">Ordered: ${l.qty}</span>
+                        <input
+                            type="number"
+                            class="line-qty-input"
+                            data-line-id="${l.id}"
+                            data-ordered="${l.qty}"
+                            value="${l.qty}"
+                            min="0"
+                            max="${l.qty}"
+                            step="1"
+                        />
+                    </div>
+                </div>`,
+                  )
+                  .join("")}
+            </div>
+        </div>`;
+
+  // Highlight rows where dispatched < ordered
+  container.querySelectorAll(".line-qty-input").forEach((input) => {
+    input.addEventListener("input", () => {
+      const row = input.closest(".line-item-row");
+      const val = parseFloat(input.value) || 0;
+      const max = parseFloat(input.dataset.ordered) || 0;
+      row.classList.toggle("partial", val < max);
+      if (val > max) input.value = max;
+      if (val < 0) input.value = 0;
+    });
+  });
+}
+
+function clearLineInputs() {
+  const container = document.getElementById("partial-lines-container");
+  if (container) {
+    container.style.display = "none";
+    container.innerHTML = "";
+  }
+}
+
+function collectPartialLines() {
+  const inputs = document.querySelectorAll(".line-qty-input");
+  if (!inputs.length) return "";
+  const map = {};
+  let hasPartial = false;
+  inputs.forEach((input) => {
+    const val = parseFloat(input.value) || 0;
+    const ordered = parseFloat(input.dataset.ordered) || 0;
+    map[input.dataset.lineId] = val;
+    if (val < ordered) hasPartial = true;
+  });
+  return hasPartial ? JSON.stringify(map) : "";
+}
+
+// Enter edit mode: pre-populate form from existing despatch
+window.startEditMode = async function (despatchId) {
+  editModeId = despatchId;
+  navigateTo("generate");
+
+  // Update form heading to make edit mode obvious
+  const heading = document.getElementById("page-heading");
+  if (heading) heading.textContent = `Edit Despatch - ${despatchId}`;
+
+  // Show an edit mode banner
+  const form = document.getElementById("generate-form");
+  let banner = document.getElementById("edit-mode-banner");
+  if (!banner) {
+    banner = document.createElement("div");
+    banner.id = "edit-mode-banner";
+    banner.style.cssText =
+      "background:var(--amber);color:#000;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;";
+    banner.innerHTML = `<span>✏️ Editing despatch <strong>${despatchId}</strong> - the original order will be re-used unless you upload a new one</span>
+            <button onclick="cancelEditMode()" style="background:none;border:1px solid rgba(0,0,0,0.3);border-radius:4px;padding:3px 8px;cursor:pointer;font-size:12px">Cancel Edit</button>`;
+    form.prepend(banner);
+  }
+
+  // Fetch source order XML and parse lines
+  if (!MOCK_MODE) {
+    try {
+      const res = await fetch(
+        `${API_BASE}/ubl/v3/despatch-advice/id/${despatchId}/source-order`,
+        {
+          headers: { Authorization: `Bearer ${getToken()}` },
+        },
+      );
+      if (res.ok) {
+        const xml = await res.text();
+        const blob = new Blob([xml], { type: "application/xml" });
+        const file = new File([blob], `order_${despatchId}.xml`, {
+          type: "application/xml",
+        });
+        selectedFile = file;
+        // Show filename in drop zone
+        document.getElementById("drop-zone-inner").style.display = "none";
+        document.getElementById("drop-zone-file").style.display = "flex";
+        document.getElementById("file-name-display").textContent = file.name;
+        await parseOrderXmlForLines(file);
+      }
+    } catch (_) {
+      /* non-fatal - user can upload a new order */
+    }
+  }
+};
+
+window.cancelEditMode = () => {
+  editModeId = null;
+  const banner = document.getElementById("edit-mode-banner");
+  if (banner) banner.remove();
+  const heading = document.getElementById("page-heading");
+  if (heading) heading.textContent = "Generate Despatch";
+  clearLineInputs();
+  selectedFile = null;
+  document.getElementById("drop-zone-inner").style.display = "";
+  document.getElementById("drop-zone-file").style.display = "none";
+  document.getElementById("xml-file-input").value = "";
+};
+
+document
+  .getElementById("generate-form")
+  .addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    if (!selectedFile) { showToast('Please upload an Order XML file', 'error'); return; }
+    const isEdit = !!editModeId;
+
+    if (!isEdit && !selectedFile) {
+      showToast("Please upload an Order XML file", "error");
+      return;
+    }
 
     if (!(MOCK_MODE ? mockStore.token : getToken())) {
-        showToast('You must be logged in to generate a despatch', 'error');
-        openModal('login-modal');
-        return;
+      showToast("You must be logged in to generate a despatch", "error");
+      openModal("login-modal");
+      return;
     }
 
-    const carrier = document.getElementById('carrier-input').value;
-    const date    = document.getElementById('date-input').value;
-    const notes   = document.getElementById('notes-input').value;
-    const btn     = document.getElementById('generate-submit-btn');
+    const carrier = document.getElementById("carrier-input").value;
+    const date = document.getElementById("date-input").value;
+    const notes = document.getElementById("notes-input").value;
+    const btn = document.getElementById("generate-submit-btn");
 
     btn.disabled = true;
-    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.22-8.56"/></svg> Generating…';
+    btn.innerHTML =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.22-8.56"/></svg> ' +
+      (isEdit ? "Updating…" : "Generating…");
 
     try {
-        let xml, uuid, filename;
+      let xml, uuid, filename;
 
-        if (MOCK_MODE) {
-            await mockDelay(900);
-            const orderId = 'ORD-' + String(mockStore.documents.length + 1).padStart(3, '0');
-            uuid     = crypto.randomUUID();
-            xml      = MOCK_XML(orderId, carrier, date, notes);
-            filename = `Despatch_${orderId}_${uuid}.xml`;
-            mockStore.documents.unshift({ uuid, despatch_id: orderId, created_at: new Date().toISOString() });
+      if (MOCK_MODE) {
+        await mockDelay(900);
+        const orderId = isEdit
+          ? editModeId
+          : "ORD-" + String(mockStore.documents.length + 1).padStart(3, "0");
+        uuid = crypto.randomUUID();
+        xml = MOCK_XML(orderId, carrier, date, notes);
+        filename = `Despatch_${orderId}_${uuid}.xml`;
+        if (!isEdit)
+          mockStore.documents.unshift({
+            uuid,
+            despatch_id: orderId,
+            created_at: new Date().toISOString(),
+          });
+      } else {
+        const fd = new FormData();
+        if (selectedFile) fd.append("order_xml", selectedFile);
+        fd.append("carrier", carrier);
+        fd.append("dispatch_date", date);
+        fd.append("notes", notes);
+        const partialJson = collectPartialLines();
+        if (partialJson) fd.append("partial_lines", partialJson);
+
+        let res;
+        if (isEdit) {
+          // PUT to edit endpoint - preserves UUID and despatch_id
+          res = await fetch(
+            `${API_BASE}/ubl/v3/despatch-advice/id/${editModeId}/edit`,
+            {
+              method: "PUT",
+              headers: { Authorization: `Bearer ${getToken()}` },
+              body: fd,
+            },
+          );
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || `Error ${res.status}`);
+          }
         } else {
-            // Backend expects multipart/form-data with:
-            //   order_xml (file), carrier (str), dispatch_date (str), notes (str)
-            // And Authorization: Bearer <token> in the header
-            const fd = new FormData();
-            fd.append('order_xml', selectedFile);         // ← key must be "order_xml"
-            fd.append('carrier', carrier);
-            fd.append('dispatch_date', date);
-            fd.append('notes', notes);
-
-            const res = await formCall('ubl/v3/despatch-advice/generate', fd);
-
-            // Response is a streaming XML file download
-            // UUID is in the response header "Despatch-UUID"
-            uuid     = res.headers.get('Despatch-UUID') || '';
-            const cd = res.headers.get('Content-Disposition') || '';
-            filename = cd.match(/filename="(.+)"/)?.[1] || 'despatch.xml';
-            const blob = await res.blob();
-            xml = await blob.text();
-            generatedXmlData = { blob, filename };
+          res = await formCall("ubl/v3/despatch-advice/generate", fd);
         }
 
-        // Show preview
-        document.getElementById('preview-empty').style.display  = 'none';
-        document.getElementById('preview-result').style.display = 'block';
-        document.getElementById('preview-filename').textContent = filename;
-        document.getElementById('preview-uuid').textContent     = uuid;
-        document.getElementById('xml-preview-content').textContent = xml.trim();
-        if (MOCK_MODE) generatedXmlData = { xml, filename };
+        uuid = res.headers.get("Despatch-UUID") || "";
+        const cd = res.headers.get("Content-Disposition") || "";
+        filename = cd.match(/filename="(.+)"/)?.[1] || "despatch.xml";
+        const blob = await res.blob();
+        xml = await blob.text();
+        generatedXmlData = { blob, filename };
+      }
 
-        showToast('Despatch Advice generated!', 'success');
-        loadDashboard();
+      // Show preview
+      document.getElementById("preview-empty").style.display = "none";
+      document.getElementById("preview-result").style.display = "block";
+      document.getElementById("preview-filename").textContent = filename;
+      document.getElementById("preview-uuid").textContent = uuid;
+      document.getElementById("xml-preview-content").textContent = xml.trim();
+      if (MOCK_MODE) generatedXmlData = { xml, filename };
+
+      showToast(
+        isEdit ? "Despatch updated!" : "Despatch Advice generated!",
+        "success",
+      );
+
+      if (isEdit) cancelEditMode();
+      loadDashboard();
     } catch (err) {
-        showToast(err.message, 'error');
+      showToast(err.message, "error");
     } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Generate Despatch Advice';
+      btn.disabled = false;
+      btn.innerHTML =
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> ' +
+        (editModeId ? "Update Despatch" : "Generate Despatch Advice");
     }
-});
+  });
 
-document.getElementById('download-btn').addEventListener('click', () => {
-    if (!generatedXmlData) return;
-    const blob = generatedXmlData.blob
-        || new Blob([generatedXmlData.xml], { type: 'application/xml' });
-    const url = URL.createObjectURL(blob);
-    Object.assign(document.createElement('a'), { href: url, download: generatedXmlData.filename }).click();
-    URL.revokeObjectURL(url);
-    showToast('Downloaded!', 'success');
+document.getElementById("download-btn").addEventListener("click", () => {
+  if (!generatedXmlData) return;
+  const blob =
+    generatedXmlData.blob ||
+    new Blob([generatedXmlData.xml], { type: "application/xml" });
+  const url = URL.createObjectURL(blob);
+  Object.assign(document.createElement("a"), {
+    href: url,
+    download: generatedXmlData.filename,
+  }).click();
+  URL.revokeObjectURL(url);
+  showToast("Downloaded!", "success");
 });
 
 // ═══════════════════════════════════════════════════════════
 //  Documents
 // ═══════════════════════════════════════════════════════════
 const loadDocuments = async () => {
-    const tbody = document.getElementById('doc-table-body');
-    const empty = document.getElementById('table-empty');
-    empty.style.display = 'none';
+  const tbody = document.getElementById("doc-table-body");
+  const empty = document.getElementById("table-empty");
+  empty.style.display = "none";
 
-    if (!(MOCK_MODE ? mockStore.token : getToken())) {
-        tbody.innerHTML = `<tr><td colspan="4" style="color:var(--text-3);text-align:center;padding:24px">
+  if (!(MOCK_MODE ? mockStore.token : getToken())) {
+    tbody.innerHTML = `<tr><td colspan="4" style="color:var(--text-3);text-align:center;padding:24px">
             Log in to view your documents.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = `<tr><td colspan="4" style="color:var(--text-3);text-align:center;padding:24px">Loading…</td></tr>`;
+
+  try {
+    // GET /ubl/v3/despatch-advice/list  → [{uuid, despatch_id}, ...]
+    // Note: list endpoint returns uuid + despatch_id only (no created_at)
+    const docs = MOCK_MODE
+      ? await mockDelay(300).then(() => [...mockStore.documents])
+      : await authCall("ubl/v3/despatch-advice/list");
+
+    let filtered = [...docs];
+
+    const renderTable = () => {
+      if (!filtered.length) {
+        tbody.innerHTML = "";
+        empty.style.display = "block";
         return;
-    }
-
-    tbody.innerHTML = `<tr><td colspan="4" style="color:var(--text-3);text-align:center;padding:24px">Loading…</td></tr>`;
-
-    try {
-        // GET /ubl/v3/despatch-advice/list  → [{uuid, despatch_id}, ...]
-        // Note: list endpoint returns uuid + despatch_id only (no created_at)
-        const docs = MOCK_MODE
-            ? await mockDelay(300).then(() => [...mockStore.documents])
-            : await authCall('ubl/v3/despatch-advice/list');
-
-        let filtered = [...docs];
-
-        const renderTable = () => {
-            if (!filtered.length) {
-                tbody.innerHTML = '';
-                empty.style.display = 'block';
-                return;
-            }
-            tbody.innerHTML = filtered.map(d => `
+      }
+      tbody.innerHTML = filtered
+        .map(
+          (d) => `
                 <tr>
                     <td><span class="mono">${d.despatch_id}</span></td>
                     <td><span class="mono small">${d.uuid}</span></td>
@@ -432,72 +764,85 @@ const loadDocuments = async () => {
                     <td>
                         <div class="action-btns">
                             <button class="action-btn" onclick="downloadDoc('${d.uuid}','${d.despatch_id}')">Download</button>
+                            <button class="action-btn edit" onclick="startEditMode('${d.despatch_id}')">Edit</button>
                             <button class="action-btn danger" onclick="deleteDoc('${d.despatch_id}','${d.uuid}')">Delete</button>
                         </div>
                     </td>
-                </tr>`).join('');
-        };
+                </tr>`,
+        )
+        .join("");
+    };
 
-        renderTable();
+    renderTable();
 
-        // Live search
-        document.getElementById('doc-search').oninput = (e) => {
-            const q = e.target.value.toLowerCase();
-            filtered = docs.filter(d =>
-                d.despatch_id.toLowerCase().includes(q) ||
-                d.uuid.toLowerCase().includes(q)
-            );
-            renderTable();
-        };
-    } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="4" style="color:var(--red);text-align:center;padding:24px">${err.message}</td></tr>`;
-    }
+    // Live search
+    document.getElementById("doc-search").oninput = (e) => {
+      const q = e.target.value.toLowerCase();
+      filtered = docs.filter(
+        (d) =>
+          d.despatch_id.toLowerCase().includes(q) ||
+          d.uuid.toLowerCase().includes(q),
+      );
+      renderTable();
+    };
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="4" style="color:var(--red);text-align:center;padding:24px">${err.message}</td></tr>`;
+  }
 };
 
 // Download: GET /ubl/v3/despatch-advice/uuid/download/{uuid}  (needs Bearer token)
 window.downloadDoc = async (uuid, id) => {
-    if (MOCK_MODE) {
-        const xml  = MOCK_XML(id, '', '', '');
-        const blob = new Blob([xml], { type: 'application/xml' });
-        const url  = URL.createObjectURL(blob);
-        Object.assign(document.createElement('a'), { href: url, download: `Despatch_${id}.xml` }).click();
-        URL.revokeObjectURL(url);
-        showToast('Downloaded ' + id, 'success');
-        return;
-    }
-    // Fetch with auth header so the protected endpoint accepts it
-    try {
-        const res = await fetch(`${API_BASE}/ubl/v3/despatch-advice/uuid/download/${uuid}`, {
-            headers: { 'Authorization': `Bearer ${getToken()}` }
-        });
-        if (!res.ok) throw new Error(`Error ${res.status}`);
-        const blob = await res.blob();
-        const url  = URL.createObjectURL(blob);
-        Object.assign(document.createElement('a'), { href: url, download: `Despatch_${id}.xml` }).click();
-        URL.revokeObjectURL(url);
-        showToast('Downloaded ' + id, 'success');
-    } catch (err) {
-        showToast(err.message, 'error');
-    }
+  if (MOCK_MODE) {
+    const xml = MOCK_XML(id, "", "", "");
+    const blob = new Blob([xml], { type: "application/xml" });
+    const url = URL.createObjectURL(blob);
+    Object.assign(document.createElement("a"), {
+      href: url,
+      download: `Despatch_${id}.xml`,
+    }).click();
+    URL.revokeObjectURL(url);
+    showToast("Downloaded " + id, "success");
+    return;
+  }
+  // Fetch with auth header so the protected endpoint accepts it
+  try {
+    const res = await fetch(
+      `${API_BASE}/ubl/v3/despatch-advice/uuid/download/${uuid}`,
+      {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      },
+    );
+    if (!res.ok) throw new Error(`Error ${res.status}`);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    Object.assign(document.createElement("a"), {
+      href: url,
+      download: `Despatch_${id}.xml`,
+    }).click();
+    URL.revokeObjectURL(url);
+    showToast("Downloaded " + id, "success");
+  } catch (err) {
+    showToast(err.message, "error");
+  }
 };
 
 // Delete: DELETE /ubl/v3/despatch-advice/id/{id}  (needs Bearer token)
 window.deleteDoc = async (id, uuid) => {
-    if (!confirm(`Delete despatch "${id}"?`)) return;
-    if (MOCK_MODE) {
-        const i = mockStore.documents.findIndex(d => d.uuid === uuid);
-        if (i > -1) mockStore.documents.splice(i, 1);
-    } else {
-        try {
-            await authCall(`ubl/v3/despatch-advice/id/${id}`, 'DELETE');
-        } catch (err) {
-            showToast(err.message, 'error');
-            return;
-        }
+  if (!confirm(`Delete despatch "${id}"?`)) return;
+  if (MOCK_MODE) {
+    const i = mockStore.documents.findIndex((d) => d.uuid === uuid);
+    if (i > -1) mockStore.documents.splice(i, 1);
+  } else {
+    try {
+      await authCall(`ubl/v3/despatch-advice/id/${id}`, "DELETE");
+    } catch (err) {
+      showToast(err.message, "error");
+      return;
     }
-    showToast('Deleted ' + id, 'success');
-    loadDocuments();
-    loadDashboard();
+  }
+  showToast("Deleted " + id, "success");
+  loadDocuments();
+  loadDashboard();
 };
 
 // ═══════════════════════════════════════════════════════════
@@ -506,123 +851,169 @@ window.deleteDoc = async (id, uuid) => {
 let validateFile = null;
 
 setupDropZone(
-    'validate-drop-zone', 'validate-drop-inner', 'validate-file-display',
-    'validate-filename', 'validate-remove', 'validate-file-input',
-    'validate-browse',
-    (f) => { validateFile = f; }
+  "validate-drop-zone",
+  "validate-drop-inner",
+  "validate-file-display",
+  "validate-filename",
+  "validate-remove",
+  "validate-file-input",
+  "validate-browse",
+  (f) => {
+    validateFile = f;
+  },
 );
 
-document.getElementById('validate-btn').addEventListener('click', async () => {
-    if (!validateFile) { showToast('Please upload an XML file first', 'error'); return; }
+document.getElementById("validate-btn").addEventListener("click", async () => {
+  if (!validateFile) {
+    showToast("Please upload an XML file first", "error");
+    return;
+  }
 
-    const btn = document.getElementById('validate-btn');
-    btn.disabled = true; btn.textContent = 'Validating…';
+  const btn = document.getElementById("validate-btn");
+  btn.disabled = true;
+  btn.textContent = "Validating…";
 
-    try {
-        let valid, errors;
-        if (MOCK_MODE) {
-            await mockDelay(800);
-            const text = await validateFile.text();
-            valid  = text.trim().startsWith('<?xml') || text.trim().startsWith('<');
-            errors = valid ? [] : ['File does not appear to be valid XML'];
-        } else {
-            // POST multipart to /ubl/v2/despatch-advice/validate
-            const fd = new FormData();
-            fd.append('file', validateFile);
-            const res = await fetch(`${API_BASE}/ubl/v2/despatch-advice/validate`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${getToken()}` },
-                body: fd
-            });
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok) throw new Error(data.detail || `Error ${res.status}`);
-            valid  = data.valid ?? (res.ok);
-            errors = data.errors || [];
-        }
-
-        document.getElementById('validate-empty').style.display          = 'none';
-        document.getElementById('validate-result-content').style.display = 'block';
-        document.getElementById('validate-status').innerHTML = valid
-            ? '<div class="meta-badge success">✓ Valid UBL 2.1 Document</div>'
-            : '<div class="meta-badge error">✗ Validation Failed</div>';
-        document.getElementById('validate-details').textContent = valid
-            ? 'No schema violations found. The document conforms to the UBL 2.1 XSD specification.'
-            : (errors.join('\n') || 'Unknown validation error.');
-
-        showToast(valid ? 'Document is valid!' : 'Validation failed', valid ? 'success' : 'error');
-    } catch (err) {
-        showToast(err.message, 'error');
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg> Run Validation';
+  try {
+    let valid, errors;
+    if (MOCK_MODE) {
+      await mockDelay(800);
+      const text = await validateFile.text();
+      valid = text.trim().startsWith("<?xml") || text.trim().startsWith("<");
+      errors = valid ? [] : ["File does not appear to be valid XML"];
+    } else {
+      // POST multipart to /ubl/v2/despatch-advice/validate
+      const fd = new FormData();
+      fd.append("file", validateFile);
+      const res = await fetch(`${API_BASE}/ubl/v2/despatch-advice/validate`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${getToken()}` },
+        body: fd,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.detail || `Error ${res.status}`);
+      valid = data.valid ?? res.ok;
+      errors = data.errors || [];
     }
+
+    document.getElementById("validate-empty").style.display = "none";
+    document.getElementById("validate-result-content").style.display = "block";
+    document.getElementById("validate-status").innerHTML = valid
+      ? '<div class="meta-badge success">✓ Valid UBL 2.1 Document</div>'
+      : '<div class="meta-badge error">✗ Validation Failed</div>';
+    document.getElementById("validate-details").textContent = valid
+      ? "No schema violations found. The document conforms to the UBL 2.1 XSD specification."
+      : errors.join("\n") || "Unknown validation error.";
+
+    showToast(
+      valid ? "Document is valid!" : "Validation failed",
+      valid ? "success" : "error",
+    );
+  } catch (err) {
+    showToast(err.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg> Run Validation';
+  }
 });
 
 // ═══════════════════════════════════════════════════════════
 //  Shared: Drop Zone Setup
 // ═══════════════════════════════════════════════════════════
-function setupDropZone(zoneId, innerId, fileDisplayId, fileNameId, removeId, inputId, browseLinkId, onFile) {
-    const zone        = document.getElementById(zoneId);
-    const inner       = document.getElementById(innerId);
-    const fileDisplay = document.getElementById(fileDisplayId);
-    const fileNameEl  = document.getElementById(fileNameId);
-    const removeBtn   = document.getElementById(removeId);
-    const input       = document.getElementById(inputId);
-    const browseLink  = document.getElementById(browseLinkId);
+function setupDropZone(
+  zoneId,
+  innerId,
+  fileDisplayId,
+  fileNameId,
+  removeId,
+  inputId,
+  browseLinkId,
+  onFile,
+) {
+  const zone = document.getElementById(zoneId);
+  const inner = document.getElementById(innerId);
+  const fileDisplay = document.getElementById(fileDisplayId);
+  const fileNameEl = document.getElementById(fileNameId);
+  const removeBtn = document.getElementById(removeId);
+  const input = document.getElementById(inputId);
+  const browseLink = document.getElementById(browseLinkId);
 
-    const showFile = (file) => {
-        inner.style.display       = 'none';
-        fileDisplay.style.display = 'flex';
-        fileNameEl.textContent    = file.name;
-        onFile(file);
-    };
-    const clearFile = () => {
-        inner.style.display       = '';
-        fileDisplay.style.display = 'none';
-        input.value               = '';
-        onFile(null);
-    };
+  const showFile = (file) => {
+    inner.style.display = "none";
+    fileDisplay.style.display = "flex";
+    fileNameEl.textContent = file.name;
+    onFile(file);
+  };
+  const clearFile = () => {
+    inner.style.display = "";
+    fileDisplay.style.display = "none";
+    input.value = "";
+    onFile(null);
+  };
 
-    zone.addEventListener('click', (e) => {
-        if (fileDisplay.style.display !== 'flex') input.click();
-    });
-    browseLink?.addEventListener('click', (e) => { e.stopPropagation(); input.click(); });
-    input.addEventListener('change', () => { if (input.files[0]) showFile(input.files[0]); });
-    removeBtn.addEventListener('click', (e) => { e.stopPropagation(); clearFile(); });
-    zone.addEventListener('dragover',  (e) => { e.preventDefault(); zone.classList.add('dragging'); });
-    zone.addEventListener('dragleave', ()  => zone.classList.remove('dragging'));
-    zone.addEventListener('drop', (e) => {
-        e.preventDefault(); zone.classList.remove('dragging');
-        const f = e.dataTransfer.files[0];
-        if (f?.name.endsWith('.xml')) showFile(f);
-        else showToast('Please drop a .xml file', 'error');
-    });
+  zone.addEventListener("click", (e) => {
+    if (fileDisplay.style.display !== "flex") input.click();
+  });
+  browseLink?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    input.click();
+  });
+  input.addEventListener("change", () => {
+    if (input.files[0]) showFile(input.files[0]);
+  });
+  removeBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    clearFile();
+  });
+  zone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    zone.classList.add("dragging");
+  });
+  zone.addEventListener("dragleave", () => zone.classList.remove("dragging"));
+  zone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    zone.classList.remove("dragging");
+    const f = e.dataTransfer.files[0];
+    if (f?.name.endsWith(".xml")) showFile(f);
+    else showToast("Please drop a .xml file", "error");
+  });
 }
 
 // ═══════════════════════════════════════════════════════════
 //  Utilities
 // ═══════════════════════════════════════════════════════════
 const formatDate = (iso) => {
-    if (!iso) return '—';
-    try { return new Date(iso).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }); }
-    catch { return iso; }
+  if (!iso) return "-";
+  try {
+    return new Date(iso).toLocaleDateString("en-AU", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return iso;
+  }
 };
 
 let toastTimer;
-const showToast = (msg, type = '') => {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.className   = `toast show ${type}`;
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => { t.className = 'toast'; }, 3200);
+const showToast = (msg, type = "") => {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = `toast show ${type}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    t.className = "toast";
+  }, 3200);
 };
 
 const setLoading = (formId, loading) => {
-    const btn = document.querySelector(`#${formId} button[type="submit"]`);
-    if (!btn) return;
-    btn.disabled = loading;
-    if (loading) { btn.dataset.orig = btn.innerHTML; btn.textContent = 'Loading…'; }
-    else btn.innerHTML = btn.dataset.orig || btn.innerHTML;
+  const btn = document.querySelector(`#${formId} button[type="submit"]`);
+  if (!btn) return;
+  btn.disabled = loading;
+  if (loading) {
+    btn.dataset.orig = btn.innerHTML;
+    btn.textContent = "Loading…";
+  } else btn.innerHTML = btn.dataset.orig || btn.innerHTML;
 };
 
 // ─── Init ─────────────────────────────────────────────────────

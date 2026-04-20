@@ -33,7 +33,9 @@ class Despatch(Base):
     uuid = Column(String, unique=True)
     despatch_id = Column(String)
     xml_content = Column(Text)
+    source_order_xml = Column(Text, nullable=True)   # stores original uploaded Order XML for edit flow
     created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=True)
 
     user_id = Column(Integer, ForeignKey("users.id"))
     user = relationship("User", back_populates="despatches")
