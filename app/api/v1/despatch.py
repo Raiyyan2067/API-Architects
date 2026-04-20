@@ -15,15 +15,36 @@ from app.core.auth import get_current_user
 router = APIRouter(tags=["Despatch Advice (v3)"])
 
 
-# Generates an XML despatch advice file from a XML Order and returns a download to the generated file
+@router.post(
+    "/generate",
+    status_code=201,
+    summary="Generate a Despatch Advice",
+    description="""
+Upload a UBL 2.1 Order XML file to generate a fully compliant UBL 2.1 Despatch Advice XML document.
 
-@router.post("/generate", status_code=201)
+**Partial orders:** Supply `partial_lines` as a JSON string mapping each line `ID` to the quantity
+being dispatched (e.g. `{"1": 60, "2": 100}`). Any line with a dispatched quantity less than the
+ordered quantity will automatically include `BackorderQuantity` and `BackorderReason` fields in the
+output XML. If `partial_lines` is omitted, all lines are dispatched in full.
+
+**Auth:** Requires a valid Bearer token. The generated document is stored against the authenticated user.
+
+**Returns:** Streaming XML file download. The assigned UUID is also returned in the `Despatch-UUID` response header.
+    """,
+    responses={
+        201: {"description": "Despatch Advice XML file generated and returned as a download"},
+        400: {"description": "Empty file uploaded"},
+        401: {"description": "Missing or invalid Bearer token"},
+        422: {"description": "Invalid XML, unrecognised Order format, or partial_lines validation failure"},
+        500: {"description": "XML generation or XSD validation error"},
+    }
+)
 async def generate_despatch(
-    order_xml: UploadFile = File(...),
-    carrier: str = Form(""),
-    dispatch_date: str = Form(""),
-    notes: str = Form(""),
-    partial_lines: str = Form(""),   # optional JSON string: {"line_id": dispatched_qty, ...}
+    order_xml: UploadFile = File(..., description="UBL 2.1 Order XML file to generate the despatch from"),
+    carrier: str = Form("", description="Carrier name (e.g. Australia Post, DHL). Mapped to CarrierParty in the output XML."),
+    dispatch_date: str = Form("", description="Dispatch date in YYYY-MM-DD format. Defaults to today if omitted."),
+    notes: str = Form("", description="Optional delivery notes. Appears as a document-level Note element in the XML."),
+    partial_lines: str = Form("", description='Optional JSON string mapping line IDs to dispatched quantities. Example: {"1": 60, "2": 100}. Omit to dispatch all lines in full.'),
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
@@ -278,9 +299,27 @@ def delete_despatch_advice_by_uuid(
 
 # ── Edit flow ────────────────────────────────────────────────
 
-# Returns the original Order XML that was uploaded when this despatch was created.
-# Used by the frontend to repopulate the edit form with the original line items.
-@router.get("/id/{id}/source-order")
+@router.get(
+    "/id/{id}/source-order",
+    summary="Get source Order XML for a despatch",
+    description="""
+Returns the original UBL 2.1 Order XML that was uploaded when this despatch was first generated.
+
+This endpoint exists to support the **edit flow** — the frontend fetches this XML to repopulate
+the line item quantity inputs before the user submits an update via `PUT /id/{id}/edit`.
+
+Note: despatches created before this feature was introduced will not have a stored source order
+and will return 404.
+
+**Auth:** Requires Bearer token. Only the owner or an admin can access this.
+    """,
+    responses={
+        200: {"description": "Original Order XML returned as application/xml"},
+        401: {"description": "Missing or invalid Bearer token"},
+        403: {"description": "Authenticated user does not own this despatch"},
+        404: {"description": "Despatch not found, or no source order XML stored for this record"},
+    }
+)
 def get_source_order(
     id: str,
     db: Session = Depends(get_db),
@@ -304,18 +343,42 @@ def get_source_order(
     )
 
 
-# Regenerates an existing despatch with updated inputs.
-# The UUID and despatch_id are preserved; xml_content is replaced.
-# Accepts same multipart form-data as /generate, with an optional new Order XML file.
-# If no new file is uploaded, the stored source_order_xml is re-used.
-@router.put("/id/{id}/edit")
+@router.put(
+    "/id/{id}/edit",
+    summary="Edit and regenerate an existing despatch",
+    description="""
+Regenerates an existing Despatch Advice with updated inputs. The original `despatch_id` and `UUID`
+are preserved — only the XML content and metadata are replaced.
+
+**Order XML:** If a new `order_xml` file is uploaded it replaces the stored source order for this
+record. If omitted, the original Order XML stored at generation time is re-used automatically.
+If neither is available a 422 is returned.
+
+**Partial orders:** Same `partial_lines` JSON format as `/generate` — supply a mapping of line IDs
+to dispatched quantities to update which lines are partially shipped.
+
+**Auth:** Requires Bearer token. Only the owner or an admin can edit a despatch.
+
+**Returns:** Streaming XML file download of the regenerated despatch. Same `Despatch-UUID` header
+as the original.
+    """,
+    responses={
+        200: {"description": "Updated Despatch Advice XML returned as a download"},
+        400: {"description": "Empty file uploaded"},
+        401: {"description": "Missing or invalid Bearer token"},
+        403: {"description": "Authenticated user does not own this despatch"},
+        404: {"description": "Despatch not found"},
+        422: {"description": "No Order XML available, invalid XML, or partial_lines validation failure"},
+        500: {"description": "XML generation or XSD validation error"},
+    }
+)
 async def edit_despatch(
     id: str,
-    order_xml: UploadFile = File(None),   # optional - re-use stored order if not provided
-    carrier: str = Form(""),
-    dispatch_date: str = Form(""),
-    notes: str = Form(""),
-    partial_lines: str = Form(""),
+    order_xml: UploadFile = File(None, description="Optional replacement Order XML. If omitted, the originally uploaded Order XML is re-used."),
+    carrier: str = Form("", description="Updated carrier name."),
+    dispatch_date: str = Form("", description="Updated dispatch date in YYYY-MM-DD format."),
+    notes: str = Form("", description="Updated delivery notes."),
+    partial_lines: str = Form("", description='Optional JSON string mapping line IDs to dispatched quantities. Example: {"1": 40}. Omit to dispatch all lines in full.'),
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
@@ -338,7 +401,7 @@ async def edit_despatch(
     else:
         raise HTTPException(
             status_code=422,
-            detail="No Order XML provided and no source order stored - please upload the original Order XML"
+            detail="No Order XML provided and no source order stored — please upload the original Order XML"
         )
 
     # --- Parse XML ---
