@@ -7,12 +7,43 @@ import io
 import json
 
 from app.core.order_parser import parse_ubl_order
-from app.core.ubl_generator import generate_despatch_advice
+from app.core.ubl_generator import generate_despatch_advice, validate_xml_against_xsd
 from app.models.user_models import User, Despatch
 from app.data.db import get_db
 from app.core.auth import get_current_user
 
 router = APIRouter(tags=["Despatch Advice (v3)"])
+
+
+@router.post(
+    "/validate",
+    summary="Validate a UBL XML document",
+    description="""
+Upload any XML file to validate it against the UBL 2.1 DespatchAdvice XSD schema.
+
+No authentication required — this endpoint is publicly accessible.
+
+**Returns:** `{ "valid": true }` if the document passes, or `{ "valid": false, "errors": ["..."] }` with a list of schema violations if it fails.
+    """,
+    responses={
+        200: {"description": "Validation result — check the `valid` field"},
+        400: {"description": "No file uploaded or empty file"},
+    }
+)
+async def validate_xml(
+    file: UploadFile = File(..., description="XML file to validate against the UBL 2.1 DespatchAdvice XSD schema"),
+):
+    xml_bytes = await file.read()
+    if not xml_bytes:
+        raise HTTPException(status_code=400, detail="Empty file uploaded")
+
+    try:
+        validate_xml_against_xsd(xml_bytes.decode("utf-8"))
+        return {"valid": True, "errors": []}
+    except ValueError as e:
+        return {"valid": False, "errors": [str(e)]}
+    except Exception as e:
+        return {"valid": False, "errors": [f"Unexpected error: {str(e)}"]}
 
 
 @router.post(
@@ -120,7 +151,7 @@ async def generate_despatch(
     )
 
 # Returns list of all of a user's generated XML documents
-@router.get("/list")
+@router.get("/list", summary="List your despatch documents", description="Returns all despatch documents belonging to the authenticated user.")
 def list_despatch_advice(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
@@ -136,7 +167,7 @@ def list_despatch_advice(
     ]
 
 # Returns list of all generated XML documents (admin only)
-@router.get("/admin/list")
+@router.get("/admin/list", summary="[Admin] List all despatches", description="Returns all despatch documents across all users. Admin only.")
 def list_all_despatch_advice(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
@@ -156,60 +187,12 @@ def list_all_despatch_advice(
     ]
 
 
-# Retrieve a Despatch Advice document using its ID
-
-
-@router.get("/id/{id}")
-def get_despatch_advice_by_id(
-    id: str,
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
-):
-    despatch = db.query(Despatch).filter(Despatch.despatch_id == id).first()
-
-    if not despatch:
-        raise HTTPException(404, "Not found")
-
-    if despatch.user_id != user.id and not user.is_admin:
-        raise HTTPException(403, "Not allowed")
-
-    return Response(
-        content=despatch.xml_content,
-        media_type="application/xml",
-        headers={
-            "Despatch-ID": despatch.despatch_id,
-            "Despatch-UUID": despatch.uuid
-        }
-    )
-
-
-# Retrieve a Despatch Advice document using its UUID
-@router.get("/uuid/{uuid}")
-def get_despatch_advice_by_uuid(
-    uuid: str,
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
-):
-    despatch = db.query(Despatch).filter(Despatch.uuid == uuid).first()
-
-    if not despatch:
-        raise HTTPException(404, "Not found")
-
-    if despatch.user_id != user.id and not user.is_admin:
-        raise HTTPException(403, "Not allowed")
-
-    return Response(
-        content=despatch.xml_content,
-        media_type="application/xml",
-        headers={
-            "Despatch-ID": despatch.despatch_id,
-            "Despatch-UUID": despatch.uuid
-        }
-    )
-
+# ── Static-segment routes MUST come before wildcard routes ───
+# Order matters: /id/download/{id} and /id/{id}/source-order must be
+# registered before /id/{id} otherwise FastAPI matches the wildcard first.
 
 # Download the XML file for a Despatch Advice using its ID
-@router.get("/id/download/{id}")
+@router.get("/id/download/{id}", summary="Download despatch XML by ID", description="Streams the XML file as a downloadable attachment, identified by despatch_id.")
 def download_despatch_advice_by_id(
     id: str,
     db: Session = Depends(get_db),
@@ -233,7 +216,7 @@ def download_despatch_advice_by_id(
 
 
 # Download the XML file for a Despatch Advice using its UUID
-@router.get("/uuid/download/{uuid}")
+@router.get("/uuid/download/{uuid}", summary="Download despatch XML by UUID", description="Streams the XML file as a downloadable attachment, identified by UUID.")
 def download_despatch_advice_by_uuid(
     uuid: str,
     db: Session = Depends(get_db),
@@ -255,49 +238,6 @@ def download_despatch_advice_by_uuid(
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
 
-
-# Delete a Despatch Advice document using its ID
-@router.delete("/id/{id}")
-def delete_despatch_advice_by_id(
-    id: str,
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
-):
-    despatch = db.query(Despatch).filter(Despatch.despatch_id == id).first()
-
-    if not despatch:
-        raise HTTPException(404, "Not found")
-
-    if despatch.user_id != user.id and not user.is_admin:
-        raise HTTPException(403, "Not allowed")
-
-    db.delete(despatch)
-    db.commit()
-
-    return {"message": "Deleted successfully"}
-
-
-# Delete a Despatch Advice document using its UUID
-def delete_despatch_advice_by_uuid(
-    uuid: str,
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
-):
-    despatch = db.query(Despatch).filter(Despatch.uuid == uuid).first()
-
-    if not despatch:
-        raise HTTPException(404, "Not found")
-
-    if despatch.user_id != user.id and not user.is_admin:
-        raise HTTPException(403, "Not allowed")
-
-    db.delete(despatch)
-    db.commit()
-
-    return {"message": "Deleted successfully"}
-
-
-# ── Edit flow ────────────────────────────────────────────────
 
 @router.get(
     "/id/{id}/source-order",
@@ -341,6 +281,110 @@ def get_source_order(
         media_type="application/xml",
         headers={"Despatch-ID": despatch.despatch_id, "Despatch-UUID": despatch.uuid}
     )
+
+
+# ── Wildcard routes come AFTER all static-segment routes ─────
+
+# Retrieve a Despatch Advice document using its ID
+@router.get("/id/{id}", summary="Get despatch XML by ID", description="Returns the raw UBL XML content of a despatch by its despatch_id.")
+def get_despatch_advice_by_id(
+    id: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    despatch = db.query(Despatch).filter(Despatch.despatch_id == id).first()
+
+    if not despatch:
+        raise HTTPException(404, "Not found")
+
+    if despatch.user_id != user.id and not user.is_admin:
+        raise HTTPException(403, "Not allowed")
+
+    return Response(
+        content=despatch.xml_content,
+        media_type="application/xml",
+        headers={
+            "Despatch-ID": despatch.despatch_id,
+            "Despatch-UUID": despatch.uuid
+        }
+    )
+
+
+# Retrieve a Despatch Advice document using its UUID
+@router.get("/uuid/{uuid}", summary="Get despatch XML by UUID", description="Returns the raw UBL XML content of a despatch by its UUID.")
+def get_despatch_advice_by_uuid(
+    uuid: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    despatch = db.query(Despatch).filter(Despatch.uuid == uuid).first()
+
+    if not despatch:
+        raise HTTPException(404, "Not found")
+
+    if despatch.user_id != user.id and not user.is_admin:
+        raise HTTPException(403, "Not allowed")
+
+    return Response(
+        content=despatch.xml_content,
+        media_type="application/xml",
+        headers={
+            "Despatch-ID": despatch.despatch_id,
+            "Despatch-UUID": despatch.uuid
+        }
+    )
+
+
+# Delete a Despatch Advice document using its ID
+@router.delete("/id/{id}", summary="Delete a despatch by ID", description="Deletes a despatch record by its despatch_id. Only the owner or an admin can delete.")
+def delete_despatch_advice_by_id(
+    id: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    despatch = db.query(Despatch).filter(Despatch.despatch_id == id).first()
+
+    if not despatch:
+        raise HTTPException(404, "Not found")
+
+    if despatch.user_id != user.id and not user.is_admin:
+        raise HTTPException(403, "Not allowed")
+
+    db.delete(despatch)
+    db.commit()
+
+    return {"message": "Deleted successfully"}
+
+
+# Delete a Despatch Advice document using its UUID
+@router.delete(
+    "/uuid/{uuid}",
+    summary="Delete a despatch by UUID",
+    description="Deletes a despatch record by its UUID. Only the owner or an admin can delete.",
+    responses={
+        200: {"description": "Deleted successfully"},
+        401: {"description": "Missing or invalid Bearer token"},
+        403: {"description": "Not the owner or admin"},
+        404: {"description": "Despatch not found"},
+    }
+)
+def delete_despatch_advice_by_uuid(
+    uuid: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    despatch = db.query(Despatch).filter(Despatch.uuid == uuid).first()
+
+    if not despatch:
+        raise HTTPException(404, "Not found")
+
+    if despatch.user_id != user.id and not user.is_admin:
+        raise HTTPException(403, "Not allowed")
+
+    db.delete(despatch)
+    db.commit()
+
+    return {"message": "Deleted successfully"}
 
 
 @router.put(

@@ -1,625 +1,326 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DespatchFlow - UBL Document Platform</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="styles/global.css" />
-  </head>
-  <body>
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-logo">
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DespatchFlow — UBL Document Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/global.css">
+</head>
+<body>
+
+<!-- ── THEME TOGGLE ── -->
+<div class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle theme (T)">
+    <div class="tgl-track"><div class="tgl-thumb"></div></div>
+    <span class="tgl-icon" id="tgl-icon">🌙</span>
+    <span class="tgl-label" id="tgl-label">Dark</span>
+</div>
+
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
         <span class="logo-mark">D</span>
-        <span class="logo-text">DespatchFlow</span>
-      </div>
-      <nav class="sidebar-nav">
+        <div class="logo-text">DespatchFlow<small>UBL Platform</small></div>
+    </div>
+    <nav class="sidebar-nav">
         <a href="#" class="nav-item active" data-page="dashboard">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <rect x="3" y="3" width="7" height="7" rx="1" />
-            <rect x="14" y="3" width="7" height="7" rx="1" />
-            <rect x="3" y="14" width="7" height="7" rx="1" />
-            <rect x="14" y="14" width="7" height="7" rx="1" />
-          </svg>
-          Dashboard
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            Dashboard
         </a>
         <a href="#" class="nav-item" data-page="generate">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-          Generate Despatch
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            Generate Despatch
         </a>
         <a href="#" class="nav-item" data-page="documents">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path
-              d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-            />
-            <polyline points="14 2 14 8 20 8" />
-          </svg>
-          My Documents
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            My Documents
         </a>
         <a href="#" class="nav-item" data-page="validate">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M9 12l2 2 4-4" />
-            <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
-          </svg>
-          Validate XML
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
+            Validate XML
         </a>
-      </nav>
-      <div class="sidebar-footer">
+    </nav>
+    <div class="sidebar-footer">
         <div class="user-chip">
-          <div class="user-avatar" id="user-avatar">?</div>
-          <span class="user-name" id="user-name-display">Guest</span>
+            <div class="user-avatar" id="user-avatar">?</div>
+            <span class="user-name" id="user-name-display">Guest</span>
         </div>
-        <button
-          class="icon-btn"
-          id="logout-btn"
-          title="Logout"
-          style="display: none"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-            <polyline points="16 17 21 12 16 7" />
-            <line x1="21" y1="12" x2="9" y2="12" />
-          </svg>
+        <button class="icon-btn" id="logout-btn" title="Logout" style="display:none">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         </button>
-      </div>
-    </aside>
+    </div>
+</aside>
 
-    <main class="main-content">
-      <header class="topbar">
+<main class="main-content">
+    <header class="topbar">
         <div class="topbar-left">
-          <h1 class="page-heading" id="page-heading">Dashboard</h1>
-          <div class="mock-badge" id="mock-badge">
-            <span class="pulse-dot"></span>MOCK MODE
-          </div>
+            <h1 class="page-heading" id="page-heading">Dashboard</h1>
+            <div class="mock-badge" id="mock-badge"><span class="pulse-dot"></span>MOCK MODE</div>
         </div>
         <div class="topbar-right" id="auth-buttons">
-          <button class="btn btn-ghost" id="login-nav-btn">Login</button>
-          <button class="btn btn-primary" id="register-nav-btn">
-            Register
-          </button>
+            <button class="btn btn-ghost" id="login-nav-btn">Login</button>
+            <button class="btn btn-primary" id="register-nav-btn">Register</button>
         </div>
-      </header>
+    </header>
 
-      <!-- DASHBOARD -->
-      <section class="page active" id="page-dashboard">
+    <!-- DASHBOARD -->
+    <section class="page active" id="page-dashboard">
         <div class="stats-row">
-          <div class="stat-card" style="--accent: #00c9a7">
-            <div class="stat-icon">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-              >
-                <path
-                  d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-                />
-                <polyline points="14 2 14 8 20 8" />
-              </svg>
+            <div class="stat-card" style="--sa:var(--ac)">
+                <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+                <div class="stat-value" id="stat-total">—</div>
+                <div class="stat-label">Total Documents</div>
             </div>
-            <div class="stat-value" id="stat-total">4</div>
-            <div class="stat-label">Total Documents</div>
-          </div>
-          <div class="stat-card" style="--accent: #f59e0b">
-            <div class="stat-icon">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
+            <div class="stat-card" style="--sa:var(--ac2)">
+                <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+                <div class="stat-value" id="stat-recent">—</div>
+                <div class="stat-label">This Week</div>
             </div>
-            <div class="stat-value" id="stat-recent">2</div>
-            <div class="stat-label">This Week</div>
-          </div>
-          <div class="stat-card" style="--accent: #22c55e">
-            <div class="stat-icon">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-              >
-                <path d="M9 12l2 2 4-4" />
-                <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
-              </svg>
+            <div class="stat-card" style="--sa:var(--gr)">
+                <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12l2 2 4-4"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg></div>
+                <div class="stat-value">100%</div>
+                <div class="stat-label">Valid Documents</div>
             </div>
-            <div class="stat-value">100%</div>
-            <div class="stat-label">Valid Documents</div>
-          </div>
-          <div class="stat-card" style="--accent: #a78bfa">
-            <div class="stat-icon">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-              >
-                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-              </svg>
+            <div class="stat-card" style="--sa:var(--pu)">
+                <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+                <div class="stat-value">v3</div>
+                <div class="stat-label">API Version</div>
             </div>
-            <div class="stat-value">v3</div>
-            <div class="stat-label">API Version</div>
-          </div>
         </div>
         <div class="dashboard-grid">
-          <div class="card">
-            <div class="card-header">
-              <h2>Recent Documents</h2>
-              <a href="#" class="link-sm" data-page="documents">View all →</a>
+            <div class="card">
+                <div class="card-header">
+                    <h2>Recent Documents</h2>
+                    <a href="#" class="link-sm" data-page="documents">View all →</a>
+                </div>
+                <div class="doc-list" id="recent-doc-list"></div>
             </div>
-            <div class="doc-list" id="recent-doc-list"></div>
-          </div>
-          <div class="card">
-            <div class="card-header"><h2>Quick Actions</h2></div>
-            <div class="quick-actions">
-              <button class="quick-btn" data-page="generate">
-                <div class="quick-icon" style="background: #00c9a7">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path d="M12 5v14M5 12h14" />
-                  </svg>
+            <div class="card">
+                <div class="card-header"><h2>Quick Actions</h2></div>
+                <div class="quick-actions">
+                    <button class="quick-btn" data-page="generate">
+                        <div class="quick-icon" style="background:var(--ac)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></div>
+                        <div><div class="quick-title">New Despatch</div><div class="quick-sub">Generate from Order XML</div></div>
+                    </button>
+                    <button class="quick-btn" data-page="validate">
+                        <div class="quick-icon" style="background:var(--ac2)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg></div>
+                        <div><div class="quick-title">Validate XML</div><div class="quick-sub">Check UBL 2.1 compliance</div></div>
+                    </button>
+                    <button class="quick-btn" data-page="documents">
+                        <div class="quick-icon" style="background:var(--pu)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+                        <div><div class="quick-title">Browse Documents</div><div class="quick-sub">View & download your files</div></div>
+                    </button>
                 </div>
-                <div>
-                  <div class="quick-title">New Despatch</div>
-                  <div class="quick-sub">Generate from Order XML</div>
-                </div>
-              </button>
-              <button class="quick-btn" data-page="validate">
-                <div class="quick-icon" style="background: #f59e0b">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path d="M9 12l2 2 4-4" />
-                    <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <div class="quick-title">Validate XML</div>
-                  <div class="quick-sub">Check UBL 2.1 compliance</div>
-                </div>
-              </button>
-              <button class="quick-btn" data-page="documents">
-                <div class="quick-icon" style="background: #a78bfa">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path
-                      d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-                    />
-                    <polyline points="14 2 14 8 20 8" />
-                  </svg>
-                </div>
-                <div>
-                  <div class="quick-title">Browse Documents</div>
-                  <div class="quick-sub">View & download your files</div>
-                </div>
-              </button>
             </div>
-          </div>
         </div>
-      </section>
+    </section>
 
-      <!-- GENERATE -->
-      <section class="page" id="page-generate">
+    <!-- GENERATE -->
+    <section class="page" id="page-generate">
         <div class="generate-layout">
-          <div class="card form-card">
-            <div class="card-header">
-              <h2>Generate Despatch Advice</h2>
-              <p class="card-sub">
-                Upload a UBL Order XML to create a compliant Despatch Advice
-                document
-              </p>
+            <div class="card form-card">
+                <div class="card-header">
+                    <div>
+                        <h2>Generate Despatch Advice</h2>
+                        <p class="card-sub">Upload a UBL Order XML to create a compliant Despatch Advice document</p>
+                    </div>
+                </div>
+                <form id="generate-form" novalidate>
+                    <div class="drop-zone" id="drop-zone">
+                        <input type="file" id="xml-file-input" accept=".xml" hidden>
+                        <div class="drop-zone-inner" id="drop-zone-inner">
+                            <div class="drop-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+                            <p class="drop-label">Drop your Order XML here</p>
+                            <p class="drop-sub">or <span class="link-inline" id="browse-link">browse files</span></p>
+                        </div>
+                        <div class="drop-zone-file" id="drop-zone-file" style="display:none">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            <span id="file-name-display">order.xml</span>
+                            <button type="button" class="remove-file" id="remove-file">✕</button>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="field">
+                            <label class="field-label" for="carrier-input">Carrier</label>
+                            <input type="text" class="field-input" id="carrier-input" placeholder="e.g. Australia Post">
+                        </div>
+                        <div class="field">
+                            <label class="field-label" for="date-input">Dispatch Date</label>
+                            <input type="date" class="field-input" id="date-input">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="field-label" for="notes-input">Notes <span class="optional">(optional)</span></label>
+                        <textarea class="field-input field-textarea" id="notes-input" placeholder="Any additional delivery notes..."></textarea>
+                    </div>
+                    <div id="partial-lines-container" style="display:none"></div>
+                    <button type="submit" class="btn btn-primary btn-full" id="generate-submit-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                        Generate Despatch Advice
+                    </button>
+                </form>
             </div>
-            <form id="generate-form" novalidate>
-              <div class="drop-zone" id="drop-zone">
-                <input type="file" id="xml-file-input" accept=".xml" hidden />
-                <div class="drop-zone-inner" id="drop-zone-inner">
-                  <div class="drop-icon">
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="1.5"
-                    >
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                      <polyline points="17 8 12 3 7 8" />
-                      <line x1="12" y1="3" x2="12" y2="15" />
-                    </svg>
-                  </div>
-                  <p class="drop-label">Drop your Order XML here</p>
-                  <p class="drop-sub">
-                    or
-                    <span class="link-inline" id="browse-link"
-                      >browse files</span
-                    >
-                  </p>
+            <div class="card">
+                <div class="card-header"><h2>Output Preview</h2></div>
+                <div class="preview-empty" id="preview-empty">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <p>Your generated XML will appear here</p>
                 </div>
-                <div
-                  class="drop-zone-file"
-                  id="drop-zone-file"
-                  style="display: none"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path
-                      d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-                    />
-                    <polyline points="14 2 14 8 20 8" />
-                  </svg>
-                  <span id="file-name-display">order.xml</span>
-                  <button type="button" class="remove-file" id="remove-file">
-                    ✕
-                  </button>
+                <div id="preview-result" style="display:none">
+                    <div class="preview-meta">
+                        <div class="meta-badge success">✓ Generated Successfully</div>
+                        <div class="meta-info">
+                            <span id="preview-filename" class="mono">—</span>
+                            <span id="preview-uuid" class="mono small">—</span>
+                        </div>
+                    </div>
+                    <pre class="xml-preview" id="xml-preview-content"></pre>
+                    <button class="btn btn-primary btn-full" id="download-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Download XML
+                    </button>
                 </div>
-              </div>
-              <div class="form-row">
-                <div class="field">
-                  <label class="field-label" for="carrier-input">Carrier</label>
-                  <input
-                    type="text"
-                    class="field-input"
-                    id="carrier-input"
-                    placeholder="e.g. Australia Post"
-                  />
-                </div>
-                <div class="field">
-                  <label class="field-label" for="date-input"
-                    >Dispatch Date</label
-                  >
-                  <input type="date" class="field-input" id="date-input" />
-                </div>
-              </div>
-              <div class="field">
-                <label class="field-label" for="notes-input"
-                  >Notes <span class="optional">(optional)</span></label
-                >
-                <textarea
-                  class="field-input field-textarea"
-                  id="notes-input"
-                  placeholder="Any additional delivery notes..."
-                ></textarea>
-              </div>
-              <!-- Partial line quantity inputs - rendered dynamically by JS after XML upload -->
-              <div id="partial-lines-container" style="display: none"></div>
-              <button
-                type="submit"
-                class="btn btn-primary btn-full"
-                id="generate-submit-btn"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-                </svg>
-                Generate Despatch Advice
-              </button>
-            </form>
-          </div>
-          <div class="card">
-            <div class="card-header"><h2>Output Preview</h2></div>
-            <div class="preview-empty" id="preview-empty">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1"
-              >
-                <path
-                  d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-                />
-                <polyline points="14 2 14 8 20 8" />
-              </svg>
-              <p>Your generated XML will appear here</p>
             </div>
-            <div id="preview-result" style="display: none">
-              <div class="preview-meta">
-                <div class="meta-badge success">✓ Generated Successfully</div>
-                <div class="meta-info">
-                  <span id="preview-filename" class="mono">-</span>
-                  <span id="preview-uuid" class="mono small">-</span>
-                </div>
-              </div>
-              <pre class="xml-preview" id="xml-preview-content"></pre>
-              <button class="btn btn-primary btn-full" id="download-btn">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" y1="15" x2="12" y2="3" />
-                </svg>
-                Download XML
-              </button>
-            </div>
-          </div>
         </div>
-      </section>
+    </section>
 
-      <!-- DOCUMENTS -->
-      <section class="page" id="page-documents">
+    <!-- DOCUMENTS -->
+    <section class="page" id="page-documents">
         <div class="docs-toolbar">
-          <div class="search-wrap">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            <input
-              type="text"
-              class="search-input"
-              id="doc-search"
-              placeholder="Search by ID or UUID…"
-            />
-          </div>
-          <button class="btn btn-primary" data-page="generate">
-            + New Despatch
-          </button>
+            <div class="search-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" class="search-input" id="doc-search" placeholder="Search by ID or UUID…">
+            </div>
+            <button class="btn btn-primary" data-page="generate">+ New Despatch</button>
         </div>
         <div class="card">
-          <table class="doc-table">
-            <thead>
-              <tr>
-                <th>Despatch ID</th>
-                <th>UUID</th>
-                <th>Created</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="doc-table-body"></tbody>
-          </table>
-          <div class="table-empty" id="table-empty" style="display: none">
-            <p>
-              No documents yet.
-              <a href="#" data-page="generate"
-                >Generate your first despatch →</a
-              >
-            </p>
-          </div>
+            <table class="doc-table">
+                <thead><tr><th>Despatch ID</th><th>UUID</th><th>Created</th><th>Actions</th></tr></thead>
+                <tbody id="doc-table-body"></tbody>
+            </table>
+            <div class="table-empty" id="table-empty" style="display:none">
+                <p>No documents yet. <a href="#" data-page="generate">Generate your first despatch →</a></p>
+            </div>
         </div>
-      </section>
+    </section>
 
-      <!-- VALIDATE -->
-      <section class="page" id="page-validate">
+    <!-- VALIDATE -->
+    <section class="page" id="page-validate">
         <div class="generate-layout">
-          <div class="card form-card">
-            <div class="card-header">
-              <h2>Validate UBL XML</h2>
-              <p class="card-sub">
-                Check any XML document against the UBL 2.1 XSD schema
-              </p>
-            </div>
-            <div class="drop-zone" id="validate-drop-zone">
-              <input
-                type="file"
-                id="validate-file-input"
-                accept=".xml"
-                hidden
-              />
-              <div class="drop-zone-inner" id="validate-drop-inner">
-                <div class="drop-icon">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                  >
-                    <path d="M9 12l2 2 4-4" />
-                    <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
-                  </svg>
+            <div class="card form-card">
+                <div class="card-header">
+                    <div>
+                        <h2>Validate UBL XML</h2>
+                        <p class="card-sub">Check any XML document against the UBL 2.1 XSD schema</p>
+                    </div>
                 </div>
-                <p class="drop-label">Drop XML file to validate</p>
-                <p class="drop-sub">
-                  or
-                  <span class="link-inline" id="validate-browse"
-                    >browse files</span
-                  >
-                </p>
-              </div>
-              <div
-                class="drop-zone-file"
-                id="validate-file-display"
-                style="display: none"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path
-                    d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-                  />
-                  <polyline points="14 2 14 8 20 8" />
-                </svg>
-                <span id="validate-filename">file.xml</span>
-                <button type="button" class="remove-file" id="validate-remove">
-                  ✕
+                <div class="drop-zone" id="validate-drop-zone">
+                    <input type="file" id="validate-file-input" accept=".xml" hidden>
+                    <div class="drop-zone-inner" id="validate-drop-inner">
+                        <div class="drop-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12l2 2 4-4"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg></div>
+                        <p class="drop-label">Drop XML file to validate</p>
+                        <p class="drop-sub">or <span class="link-inline" id="validate-browse">browse files</span></p>
+                    </div>
+                    <div class="drop-zone-file" id="validate-file-display" style="display:none">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        <span id="validate-filename">file.xml</span>
+                        <button type="button" class="remove-file" id="validate-remove">✕</button>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-full" id="validate-btn" style="margin-top:1.5rem">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
+                    Run Validation
                 </button>
-              </div>
             </div>
-            <button
-              class="btn btn-primary btn-full"
-              id="validate-btn"
-              style="margin-top: 1.5rem"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M9 12l2 2 4-4" />
-                <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
-              </svg>
-              Run Validation
-            </button>
-          </div>
-          <div class="card">
-            <div class="card-header"><h2>Validation Result</h2></div>
-            <div class="preview-empty" id="validate-empty">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1"
-              >
-                <path d="M9 12l2 2 4-4" />
-                <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
-              </svg>
-              <p>Upload a file and run validation</p>
+            <div class="card">
+                <div class="card-header"><h2>Validation Result</h2></div>
+                <div class="preview-empty" id="validate-empty">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M9 12l2 2 4-4"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
+                    <p>Upload a file and run validation</p>
+                </div>
+                <div id="validate-result-content" style="display:none">
+                    <div class="validate-status" id="validate-status"></div>
+                    <div class="validate-details" id="validate-details"></div>
+                </div>
             </div>
-            <div id="validate-result-content" style="display: none">
-              <div class="validate-status" id="validate-status"></div>
-              <div class="validate-details" id="validate-details"></div>
-            </div>
-          </div>
         </div>
-      </section>
-    </main>
+    </section>
+</main>
 
-    <!-- MODALS -->
-    <div class="modal-overlay" id="modal-overlay" style="display: none">
-      <div class="modal" id="login-modal">
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-overlay" style="display:none">
+    <div class="modal" id="login-modal">
         <button class="modal-close" data-close-modal>✕</button>
         <div class="modal-logo"><span class="logo-mark sm">D</span></div>
         <h2 class="modal-title">Welcome back</h2>
         <p class="modal-sub">Sign in to your DespatchFlow account</p>
         <form id="login-form" novalidate>
-          <div class="field">
-            <label class="field-label" for="login-username">Username</label>
-            <input
-              type="text"
-              class="field-input"
-              id="login-username"
-              placeholder="your_username"
-            />
-          </div>
-          <div class="field">
-            <label class="field-label" for="login-password">Password</label>
-            <input
-              type="password"
-              class="field-input"
-              id="login-password"
-              placeholder="••••••••"
-            />
-          </div>
-          <div class="form-error" id="login-error"></div>
-          <button type="submit" class="btn btn-primary btn-full">
-            Sign In
-          </button>
+            <div class="field">
+                <label class="field-label" for="login-username">Username</label>
+                <input type="text" class="field-input" id="login-username" placeholder="your_username">
+            </div>
+            <div class="field">
+                <label class="field-label" for="login-password">Password</label>
+                <input type="password" class="field-input" id="login-password" placeholder="••••••••">
+            </div>
+            <div class="form-error" id="login-error"></div>
+            <button type="submit" class="btn btn-primary btn-full">Sign In</button>
         </form>
-        <p class="modal-switch">
-          No account? <a href="#" id="switch-to-register">Register here</a>
-        </p>
-      </div>
-      <div class="modal" id="register-modal" style="display: none">
+        <p class="modal-switch">No account? <a href="#" id="switch-to-register">Register here</a></p>
+    </div>
+    <div class="modal" id="register-modal" style="display:none">
         <button class="modal-close" data-close-modal>✕</button>
         <div class="modal-logo"><span class="logo-mark sm">D</span></div>
         <h2 class="modal-title">Create account</h2>
-        <p class="modal-sub">
-          Join DespatchFlow to start generating UBL documents
-        </p>
+        <p class="modal-sub">Join DespatchFlow to start generating UBL documents</p>
         <form id="register-form" novalidate>
-          <div class="field">
-            <label class="field-label" for="reg-username">Username</label>
-            <input
-              type="text"
-              class="field-input"
-              id="reg-username"
-              placeholder="choose_a_username"
-            />
-          </div>
-          <div class="field">
-            <label class="field-label" for="reg-password">Password</label>
-            <input
-              type="password"
-              class="field-input"
-              id="reg-password"
-              placeholder="••••••••"
-            />
-          </div>
-          <div class="field">
-            <label class="field-label" for="reg-confirm"
-              >Confirm Password</label
-            >
-            <input
-              type="password"
-              class="field-input"
-              id="reg-confirm"
-              placeholder="••••••••"
-            />
-          </div>
-          <div class="form-error" id="register-error"></div>
-          <button type="submit" class="btn btn-primary btn-full">
-            Create Account
-          </button>
+            <div class="field">
+                <label class="field-label" for="reg-username">Username</label>
+                <input type="text" class="field-input" id="reg-username" placeholder="choose_a_username">
+            </div>
+            <div class="field">
+                <label class="field-label" for="reg-password">Password</label>
+                <input type="password" class="field-input" id="reg-password" placeholder="••••••••">
+            </div>
+            <div class="field">
+                <label class="field-label" for="reg-confirm">Confirm Password</label>
+                <input type="password" class="field-input" id="reg-confirm" placeholder="••••••••">
+            </div>
+            <div class="form-error" id="register-error"></div>
+            <button type="submit" class="btn btn-primary btn-full">Create Account</button>
         </form>
-        <p class="modal-switch">
-          Already have an account? <a href="#" id="switch-to-login">Sign in</a>
-        </p>
-      </div>
+        <p class="modal-switch">Already have an account? <a href="#" id="switch-to-login">Sign in</a></p>
     </div>
+</div>
 
-    <div class="toast" id="toast"></div>
-    <script src="src/main.js?v=2" type="module"></script>
-  </body>
+<div class="toast" id="toast"></div>
+<script src="src/main.js?v=3" type="module"></script>
+
+<script>
+// Theme toggle — runs inline before main.js to prevent flash of wrong theme
+(function() {
+    const saved = localStorage.getItem('df-theme') || 'dark';
+    applyTheme(saved);
+})();
+
+function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    const label = document.getElementById('tgl-label');
+    const icon  = document.getElementById('tgl-icon');
+    if (label) label.textContent = t === 'dark' ? 'Dark' : 'Light';
+    if (icon)  icon.textContent  = t === 'dark' ? '🌙' : '☀️';
+    localStorage.setItem('df-theme', t);
+}
+
+function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme');
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+}
+
+// Keyboard shortcut: press T to toggle (not in input fields)
+document.addEventListener('keydown', e => {
+    if (e.key === 't' && !e.target.matches('input,textarea,select')) toggleTheme();
+});
+</script>
+</body>
 </html>
