@@ -11,10 +11,7 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="UBL Despatch API", version="2.1")
 
-origins = [
-    "http://localhost:8080",
-    "http://localhost:8081"
-]
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,

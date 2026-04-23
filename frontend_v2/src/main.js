@@ -13,8 +13,10 @@
 const MOCK_MODE = false;
 // Use 'http://localhost:8000' when running backend locally with python run.py
 // Use the AWS URL below when the deployment is fixed
-// const API_BASE = 'https://rhumzuhvabxxwsemnufzash5ue0wubck.lambda-url.ap-southeast-2.on.aws';
-const API_BASE = "http://localhost:8000";
+const API_BASE =
+  ["localhost", "127.0.0.1"].includes(window.location.hostname)
+    ? "http://localhost:8000"
+    : "https://rhumzuhvabxxwsemnufzash5ue0wubck.lambda-url.ap-southeast-2.on.aws";
 
 // ─── Token management ────────────────────────────────────────
 const getToken = () => localStorage.getItem("df_token");
